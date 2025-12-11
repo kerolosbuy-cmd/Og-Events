@@ -75,7 +75,7 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
         setNotification({
           type: 'success',
           message:
-            'Seats held for 10 minutes. Please upload payment proof to complete your booking.',
+            'Seats held for 60 minutes. Please upload payment proof to complete your booking.',
           isVisible: true,
         });
       } else if (result.error) {
