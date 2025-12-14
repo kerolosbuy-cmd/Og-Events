@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { getPendingBookings, BookingData } from './actions';
 import BookingsList from './BookingsList';
+import { isUserAdmin } from '@/lib/auth';
 
 async function goBackToDashboard() {
   'use server';
@@ -23,12 +24,7 @@ async function BookingsContent() {
   }
 
   // Check if the user is an authorized admin
-  const authorizedAdmins = [
-    'kerolos4work@gmail.com',
-    // Add more admin email(s) here
-  ];
-
-  if (authorizedAdmins.length > 0 && !authorizedAdmins.includes(user.email || '')) {
+  if (!isUserAdmin(user)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <Card className="w-[350px]">

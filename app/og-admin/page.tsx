@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Suspense } from 'react';
 import { goToSettings, logout } from './actions';
+import { isUserAdmin } from '@/lib/auth';
 
 async function AdminDashboard() {
   const supabase = await createClient();
@@ -17,17 +18,7 @@ async function AdminDashboard() {
   }
 
   // Check if the user is an authorized admin
-  // Allow any authenticated user to access the admin page
-  // If you want to restrict access to specific users, add their emails to the array below
-  const authorizedAdmins = [
-    'kerolos4work@gmail.com',
-    // Add more admin email(s) here, for example:
-    // 'your-email@example.com',
-    // 'another-admin@example.com'
-  ];
-
-  // If the authorizedAdmins array is empty, allow any authenticated user
-  if (authorizedAdmins.length > 0 && !authorizedAdmins.includes(user.email || '')) {
+  if (!isUserAdmin(user)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <Card className="w-[350px]">

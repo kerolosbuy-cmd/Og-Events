@@ -25,6 +25,7 @@ async function BookingsContent() {
   // Check if the user is an authorized admin
   const authorizedAdmins = [
     'kerolos4work@gmail.com',
+    'miraphilip2012@gmail.com',
     // Add more admin email(s) here
   ];
 
