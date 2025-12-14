@@ -18,14 +18,14 @@
           "title": "Instapay",
           "phoneNumber": "01203163377",
           "name": "Instapay Account",
-          "color": "#0066CC"
+          "color": "#8B5CF6"
         },
         {
           "image": "https://example.com/images/sudani-cash.jpg",
           "title": "Sudani Cash",
           "phoneNumber": "0123630702",
           "name": "Sudani Cash Account",
-          "color": "#00A652"
+          "color": "#3B82F6"
         }
       ],
       "description": "Payment methods displayed to users during checkout"
