@@ -1,0 +1,53 @@
+import { NextResponse } from 'next/server';
+import crypto from 'crypto';
+
+export async function POST(request: Request) {
+  try {
+    const { params } = await request.json();
+
+    // Get API key from environment variables
+    const secret = process.env.KASHIER_API_KEY;
+
+    if (!secret) {
+      console.error('Missing API key for signature validation');
+      return NextResponse.json(
+        { error: 'Missing API key' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Validating signature with params:', params);
+
+    // Create query string for validation in the same format as the webhook
+    let queryString = '';
+    for (const key in params) {
+      if (key === 'signature' || key === 'mode') continue;
+      queryString += '&' + key + '=' + params[key];
+    }
+    const finalUrl = queryString.substr(1);
+
+    console.log('Generated query string for validation:', finalUrl);
+
+    // Generate the expected signature
+    const expectedSignature = crypto.createHmac('sha256', secret).update(finalUrl).digest('hex');
+
+    console.log('Expected signature:', expectedSignature);
+    console.log('Received signature:', params.signature);
+
+    // Compare signatures
+    const isValid = expectedSignature === params.signature;
+
+    console.log('Signature validation result:', isValid);
+
+    return NextResponse.json({ 
+      isValid,
+      expectedSignature: isValid ? undefined : expectedSignature // Only include in response if invalid
+    });
+  } catch (error) {
+    console.error('Error validating signature:', error);
+    return NextResponse.json(
+      { error: 'Failed to validate signature' },
+      { status: 500 }
+    );
+  }
+}

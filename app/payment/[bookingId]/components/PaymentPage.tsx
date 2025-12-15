@@ -98,6 +98,8 @@ export default function PaymentPage({
             file={file}
             isUploading={isUploading}
             handleSubmit={handleSubmit}
+            bookingId={bookingId}
+            bookingDetails={bookingDetails}
           />
         </form>
       </div>
