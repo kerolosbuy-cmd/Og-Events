@@ -61,18 +61,21 @@ export default function ActionButtons({
       const merchantId = process.env.NEXT_PUBLIC_KASHIER_MERCHANT_ID || 'MID-41460-868';
       const paymentUrl = new URL('https://payments.kashier.io/');
 
+      const origin = window.location.origin;
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || origin;
+
       paymentUrl.searchParams.append('merchantId', merchantId);
       paymentUrl.searchParams.append('orderId', bookingId);
       paymentUrl.searchParams.append('amount', amount.toString());
       paymentUrl.searchParams.append('currency', 'EGP');
       paymentUrl.searchParams.append('hash', data.hash);
       paymentUrl.searchParams.append('mode', 'test'); // Change to 'live' for production
-      paymentUrl.searchParams.append('merchantRedirect', 'http://localhost:3000/payment/success');
-      paymentUrl.searchParams.append('serverWebhook', 'http://localhost:3000/api/payment/webhook');
+      paymentUrl.searchParams.append('merchantRedirect', `${origin}/payment/success`);
+      paymentUrl.searchParams.append('serverWebhook', `${baseUrl}/api/payment/webhook`);
       paymentUrl.searchParams.append('paymentRequestId', `req_${Date.now()}`);
       paymentUrl.searchParams.append('allowedMethods', 'card,instapay,fawry,wallet');
       paymentUrl.searchParams.append('defaultMethod', 'wallet');
-      paymentUrl.searchParams.append('failureRedirect', 'http://localhost:3000/payment/failure');
+      paymentUrl.searchParams.append('failureRedirect', `${origin}/payment/failure`);
       paymentUrl.searchParams.append('redirectMethod', 'GET');
       paymentUrl.searchParams.append('brandColor', '#4F46E5');
       paymentUrl.searchParams.append('display', 'en');
