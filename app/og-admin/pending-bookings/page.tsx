@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getPendingBookingsWithImages, BookingData } from './actions';
-import BookingsList from './BookingsList';
+import BookingsTable from './BookingsTable';
 import { ArrowLeft, Clock, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 async function goBackToDashboard() {
@@ -61,7 +61,7 @@ async function BookingsContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="mb-8 md:flex md:items-center md:justify-between">
           <div className="mb-4 md:mb-0">
@@ -112,7 +112,13 @@ async function BookingsContent() {
             </CardContent>
           </Card>
         ) : (
-          <BookingsList bookings={bookings || []} />
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Pending Bookings</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Review and manage bookings with pending or null status</p>
+            </div>
+            <BookingsTable bookings={bookings || []} />
+          </div>
         )}
       </div>
     </div>

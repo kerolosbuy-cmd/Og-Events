@@ -62,7 +62,7 @@ export async function getPendingBookingsWithImages(): Promise<{
       )
       .in('status', ['pending', null])
       .not('image', 'is', null)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching pending bookings with images:', error);
