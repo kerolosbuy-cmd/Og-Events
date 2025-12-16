@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, AlertCircle, Loader2 } from 'lucide-react';
 import { handleApproveBooking, handleRejectBooking } from './client-actions';
 import { BookingData } from './actions';
 import PrivateImage from '@/components/booking/PrivateImage';
@@ -62,59 +62,96 @@ export default function BookingsList({ bookings: initialBookings }: BookingsList
 
   const getStatusBadge = (status: string) => {
     if (!status) {
-      return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Null</span>;
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+          <span className="w-2 h-2 mr-1.5 rounded-full bg-gray-400"></span>
+          Null
+        </span>
+      );
     }
 
     return (
-      <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+        <span className="w-2 h-2 mr-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        Pending
+      </span>
     );
   };
 
   return (
     <>
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
+        <Card className="mb-6 border-0 shadow-lg bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm overflow-hidden">
+          <CardContent className="pt-6 flex items-center gap-3">
+            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="font-medium text-red-800 dark:text-red-200">Error</p>
+              <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="space-y-6">
         {bookings.map(booking => (
           <BookingCard
             key={booking.id}
             booking={booking}
-            headerClassName="bg-gradient-to-r from-indigo-50 to-purple-50"
+            headerClassName="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-pink-900/20"
             statusBadge={getStatusBadge(booking.status)}
             actions={
-              <>
+              <div className="flex gap-3 w-full pt-2">
                 <Button
                   onClick={() => handleApprove(booking.id)}
                   disabled={isPending && processingId === booking.id}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md transition-all duration-200 flex items-center justify-center"
+                  size="sm"
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {processingId === booking.id && isPending ? 'Approving...' : 'Approve'}
+                  {processingId === booking.id && isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </>
+                  )}
                 </Button>
 
                 <Button
                   onClick={() => handleReject(booking.id)}
                   disabled={isPending && processingId === booking.id}
                   variant="destructive"
-                  className="flex-1"
+                  className="flex-1 shadow-md transition-all duration-200 flex items-center justify-center"
+                  size="sm"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {processingId === booking.id && isPending ? 'Rejecting...' : 'Reject'}
+                  {processingId === booking.id && isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </>
+                  )}
                 </Button>
-              </>
+              </div>
             }
             sidebar={
-              <div className="bg-gray-50 rounded-lg p-4 h-full flex flex-col">
-                <p className="text-xs text-gray-500 mb-2">Payment Proof</p>
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 h-full flex flex-col border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Payment Proof</p>
+                </div>
                 {booking.image ? (
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-white border">
+                  <div className="flex-1 flex flex-col items-center justify-center space-y-3">
+                    <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                       <PrivateImage
                         src={booking.image || ''}
                         alt="Payment Proof"
@@ -127,15 +164,18 @@ export default function BookingsList({ bookings: initialBookings }: BookingsList
                       onClick={() => setSelectedImage(booking.image)}
                       variant="outline"
                       size="sm"
-                      className="mt-3 w-full"
+                      className="w-full rounded-lg border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View Full Size
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-400">
-                    No image
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                      <Eye className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm">No image</p>
                   </div>
                 )}
               </div>
@@ -147,19 +187,23 @@ export default function BookingsList({ bookings: initialBookings }: BookingsList
       {/* Image Modal */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative max-w-4xl max-h-[90vh] w-full">
+          <div className="relative max-w-5xl max-h-[90vh] w-full animate-in zoom-in-95 duration-200">
             <Button
-              onClick={() => setSelectedImage(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
               variant="outline"
               size="sm"
-              className="absolute -top-12 right-0 bg-white"
+              className="absolute -top-12 right-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 border-0 shadow-lg rounded-full px-4 text-slate-700 dark:text-slate-200"
             >
-              Close
+              <span className="mr-2">Close</span>
+              <span className="text-xl">×</span>
             </Button>
-            <div className="relative w-full h-[80vh]">
+            <div className="relative w-full h-[80vh] rounded-lg overflow-hidden shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
               <PrivateImage
                 src={selectedImage || ''}
                 alt="Payment Proof - Full Size"
