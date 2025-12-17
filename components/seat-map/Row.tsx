@@ -49,7 +49,7 @@ const Row: React.FC<RowProps> = ({ row, categories, selectedSeats, onSeatClick }
           rowNumber={row.row_number}
           categories={categories}
           isSelected={isSeatSelected(seat.id)}
-          onClick={onSeatClick}
+          onClick={onSeatClick || (() => {})}
         />
       ))}
     </g>

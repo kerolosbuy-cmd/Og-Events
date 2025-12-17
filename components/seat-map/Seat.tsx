@@ -126,7 +126,18 @@ const Seat: React.FC<SeatProps> = ({ seat, rowNumber, categories, isSelected, on
   );
 
   const handleClick = (e: React.MouseEvent) => {
-    if (seat.status === 'available') {
+    if (seat.status === 'available' && onClick) {
+      // Check if seat selection should be prevented (after zone click)
+      if (typeof window !== 'undefined' && (window as any).__preventSeatSelectionUntil) {
+        const now = Date.now();
+        if (now < (window as any).__preventSeatSelectionUntil) {
+          // Don't select the seat if we're within the prevention period
+          return;
+        } else {
+          // Clear the flag if the prevention period has passed
+          delete (window as any).__preventSeatSelectionUntil;
+        }
+      }
       onClick(seat);
     }
   };
@@ -164,7 +175,18 @@ const Seat: React.FC<SeatProps> = ({ seat, rowNumber, categories, isSelected, on
       const timeDiff = touchEndPos.time - touchStartPos.current.time;
       
       // If it was a quick tap (small distance, short time), select the seat
-      if (distance < 10 && timeDiff < 300 && seat.status === 'available') {
+      if (distance < 10 && timeDiff < 300 && seat.status === 'available' && onClick) {
+        // Check if seat selection should be prevented (after zone click)
+        if (typeof window !== 'undefined' && (window as any).__preventSeatSelectionUntil) {
+          const now = Date.now();
+          if (now < (window as any).__preventSeatSelectionUntil) {
+            // Don't select the seat if we're within the prevention period
+            return;
+          } else {
+            // Clear the flag if the prevention period has passed
+            delete (window as any).__preventSeatSelectionUntil;
+          }
+        }
         onClick(seat);
       }
       

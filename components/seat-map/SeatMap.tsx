@@ -156,6 +156,8 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
       Viewer.current.setPointOnViewerCenter(mapData.width / 2, mapData.height / 2, scale);
       // Update the zoom level state to make zone rectangles visible
       setZoomLevel(scale);
+      // Set full map view as active
+      setIsFullMapView(true);
     }
   };
 
@@ -171,6 +173,24 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
   const [zoomLevel, setZoomLevel] = React.useState(1);
   // Store reference to the viewer component
   const viewerRef = React.useRef<any>(null);
+  // Track if full map view is active
+  const [isFullMapView, setIsFullMapView] = React.useState(true);
+
+  // Listen for zone click events on mobile
+  React.useEffect(() => {
+    const handleZoneClick = () => {
+      if (dimensions.width <= 768) {
+        setIsFullMapView(false);
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('zoneClicked', handleZoneClick);
+
+    return () => {
+      window.removeEventListener('zoneClicked', handleZoneClick);
+    };
+  }, [dimensions.width]);
 
   // Handle zoom changes
   const handleZoomChange = React.useCallback((event: any) => {
@@ -207,17 +227,11 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
       const scaleY = viewerHeight / zoneHeight;
       // Use the smaller scale to ensure the entire zone fits in the viewport
       const newZoomLevel = Math.min(scaleX, scaleY) * 0.95; // Slightly smaller to ensure edges are visible
-      
-      // Use the built-in smooth zoom animation
-      // Get the current zoom level if available, otherwise use the calculated one
-      const currentZoom = event && event.a ? event.a : newZoomLevel;
-      Viewer.current.setPointOnViewerCenter(centerX, centerY, currentZoom, { 
-        animationTime: 600, 
-        easing: "easeInOut" 
-      });
+
+      Viewer.current.setPointOnViewerCenter(centerX, centerY, newZoomLevel);
       
       // Update the zoom level state to trigger rectangle opacity change
-      setZoomLevel(currentZoom);
+      setZoomLevel(newZoomLevel);
     }
   }, [mapData, dimensions]);
 
@@ -235,9 +249,13 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
     type: 'price' as const,
   }));
 
+  const isMobile = dimensions.width <= 768;
+
   return (
     <div
-      className={`relative w-full h-screen overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}
+      className={`relative w-full h-screen overflow-hidden ${
+        isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}
     >
       {/* SVG Definitions */}
       <SVGPatterns />
@@ -269,7 +287,6 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
           scaleFactorMin={0.1}
           onZoom={handleZoomChange}
           onDoubleClick={preventDefault}
-
           style={{ touchAction: 'manipulation' }}
         >
           <svg
@@ -287,6 +304,8 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
                 onSeatClick={handleSeatClick}
                 onZoneClick={handleZoneClick}
                 zoomLevel={zoomLevel}
+                isMobile={isMobile}
+                isFullMapView={isFullMapView}
               />
             ))}
           </svg>

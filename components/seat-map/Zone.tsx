@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Row from './Row';
 import {
   Zone as ZoneType,
@@ -24,6 +24,10 @@ interface ZoneProps {
   zoomLevel?: number;
   /** Callback function triggered when a zone is clicked */
   onZoneClick?: (zoneId: string) => void;
+  /** Flag to indicate if the view is on a mobile device */
+  isMobile?: boolean;
+  /** Flag to indicate if full map view is active */
+  isFullMapView?: boolean;
 }
 
 /**
@@ -65,7 +69,19 @@ const Area: React.FC<{ area: AreaType }> = ({ area }) => {
  * @param {ZoneProps} props - Component props
  * @returns {JSX.Element} SVG group element containing rows and areas
  */
-const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClick, zoomLevel = 1, onZoneClick }) => {
+const Zone: React.FC<ZoneProps> = ({
+  zone,
+  categories,
+  selectedSeats,
+  onSeatClick,
+  zoomLevel = 1,
+  onZoneClick,
+  isMobile = false,
+  isFullMapView = true,
+}) => {
+  // Ref to store pointer down event details to distinguish pan from tap
+  const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(null);
+
   // Calculate the bounds of all seats in the zone
   const { minX, minY, maxX, maxY, hasSeats } = calculateZoneBounds(zone);
 
@@ -78,20 +94,69 @@ const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClic
 
   // Calculate rectangle opacity based on zoom level
   let rectOpacity = 0.8; // Default opacity
-  if (zoomLevel >= 2.3) {
-    rectOpacity = 0;
-  } else if (zoomLevel <= 1) {
-    rectOpacity = 0.8;
+
+  if (!isMobile) {
+    if (zoomLevel >= 2.3) {
+      rectOpacity = 0;
+    } else if (zoomLevel > 1) {
+      // Linear interpolation between opacity 0.8 at zoom=1 and opacity 0 at zoom=2.3
+      rectOpacity = 0.8 * (1 - (zoomLevel - 1) / 1.3);
+    }
   } else {
-    // Linear interpolation between opacity 0.8 at zoom=1 and opacity 0 at zoom=2.3
-    rectOpacity = 0.8 * (1 - ((zoomLevel - 1) / 1.3));
+    // On mobile, only show zone rectangles when in full map view
+    rectOpacity = isFullMapView ? 0.8 : 0;
   }
+
+  // Calculate text opacity based on rectangle opacity
+  const textOpacity = rectOpacity > 0 ? 1 : 0;
 
   // Determine if seats should be selectable based on rectangle opacity
   const seatsSelectable = rectOpacity < 0.3 || !hasSeats;
-  
+
   // Don't render the zone rectangle and text when opacity is 0
   const shouldRenderZone = hasSeats && rectOpacity > 0;
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerDownRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (pointerDownRef.current) {
+      const { x, y, time } = pointerDownRef.current;
+      const deltaX = Math.abs(e.clientX - x);
+      const deltaY = Math.abs(e.clientY - y);
+      const deltaTime = Date.now() - time;
+
+      // Thresholds for movement and time to detect a tap
+      const distanceThreshold = 10; // 10 pixels
+      const timeThreshold = 300; // 300 ms
+
+      if (deltaX < distanceThreshold && deltaY < distanceThreshold && deltaTime < timeThreshold) {
+        // It's a tap, so trigger the zone click
+        if (onZoneClick) {
+          onZoneClick(zone.id);
+
+          // On mobile, hide all zone rectangles when a zone is clicked
+          if (isMobile) {
+            // Dispatch a custom event to notify the parent component
+            if (typeof window !== 'undefined') {
+              const event = new CustomEvent('zoneClicked');
+              window.dispatchEvent(event);
+
+              // Set a flag to prevent seat selection for a short time after zone click
+              (window as any).__preventSeatSelectionUntil = Date.now() + 500; // 500ms
+            }
+          }
+        }
+
+        // Prevent the event from propagating to seat elements
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      // Reset the ref after processing
+      pointerDownRef.current = null;
+    }
+  };
 
   return (
     <React.Fragment>
@@ -118,7 +183,11 @@ const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClic
 
         {/* Zone rectangle for visual enhancement */}
         {shouldRenderZone && (
-          <g onClick={() => onZoneClick && onZoneClick(zone.id)} style={{ cursor: 'pointer' }}>
+          <g
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            style={{ cursor: 'pointer' }}
+          >
             <rect
               x={minX - paddingX}
               y={minY - paddingY}
@@ -132,6 +201,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClic
               rx="8"
               ry="8"
               className="zone-rect"
+              style={{ pointerEvents: isMobile ? 'auto' : 'none' }}
             />
             <text
               x={(minX + maxX) / 2}
@@ -141,7 +211,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClic
               fill="white"
               fontSize={Math.max(18, (maxX - minX) / 7)}
               fontWeight="900"
-              opacity={1 - ((zoomLevel - 1) / 1.3)}
+              opacity={textOpacity}
               pointerEvents="none"
             >
               {zone.name}
