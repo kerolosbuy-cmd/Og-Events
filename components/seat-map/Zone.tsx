@@ -6,6 +6,7 @@ import {
   Seat as SeatType,
   Area as AreaType,
 } from './types';
+import { calculateZoneBounds, getZoneColor } from './utils/zoneHelpers';
 
 /**
  * Props for the Zone component
@@ -19,6 +20,10 @@ interface ZoneProps {
   selectedSeats: SeatType[];
   /** Callback function triggered when a seat is clicked */
   onSeatClick: (seat: SeatType) => void;
+  /** Current zoom level from the parent component */
+  zoomLevel?: number;
+  /** Callback function triggered when a zone is clicked */
+  onZoneClick?: (zoneId: string) => void;
 }
 
 /**
@@ -60,30 +65,92 @@ const Area: React.FC<{ area: AreaType }> = ({ area }) => {
  * @param {ZoneProps} props - Component props
  * @returns {JSX.Element} SVG group element containing rows and areas
  */
-const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClick }) => {
-  return (
-    <g
-      key={zone.id}
-      transform={`translate(${zone.position_x}, ${zone.position_y})`}
-      className="seat-zone"
-      data-zone-name={zone.name}
-    >
-      {/* Render areas (e.g., stage) */}
-      {zone.areas && zone.areas.map(area => <Area key={area.id} area={area} />)}
+const Zone: React.FC<ZoneProps> = ({ zone, categories, selectedSeats, onSeatClick, zoomLevel = 1, onZoneClick }) => {
+  // Calculate the bounds of all seats in the zone
+  const { minX, minY, maxX, maxY, hasSeats } = calculateZoneBounds(zone);
 
-      {/* Render rows of seats */}
-      {zone.rows.map(row => (
-        <Row
-          key={row.id}
-          row={row}
-          categories={categories}
-          selectedSeats={selectedSeats}
-          onSeatClick={onSeatClick}
-        />
-      ))}
-    </g>
+  // Get the zone color based on the most common seat category
+  const zoneColor = getZoneColor(zone, categories);
+
+  // Calculate padding for the rectangle (2% of the zone size for tighter fit)
+  const paddingX = (maxX - minX) * 0.02;
+  const paddingY = (maxY - minY) * 0.02;
+
+  // Calculate rectangle opacity based on zoom level
+  let rectOpacity = 0.8; // Default opacity
+  if (zoomLevel >= 2.3) {
+    rectOpacity = 0;
+  } else if (zoomLevel <= 1) {
+    rectOpacity = 0.8;
+  } else {
+    // Linear interpolation between opacity 0.8 at zoom=1 and opacity 0 at zoom=2.3
+    rectOpacity = 0.8 * (1 - ((zoomLevel - 1) / 1.3));
+  }
+
+  // Determine if seats should be selectable based on rectangle opacity
+  const seatsSelectable = rectOpacity < 0.3 || !hasSeats;
+  
+  // Don't render the zone rectangle and text when opacity is 0
+  const shouldRenderZone = hasSeats && rectOpacity > 0;
+
+  return (
+    <React.Fragment>
+      {/* Main zone group with all elements */}
+      <g
+        key={zone.id}
+        transform={`translate(${zone.position_x}, ${zone.position_y})`}
+        className="seat-zone"
+        data-zone-name={zone.name}
+      >
+        {/* Render areas (e.g., stage) */}
+        {zone.areas && zone.areas.map(area => <Area key={area.id} area={area} />)}
+
+        {/* Render rows of seats */}
+        {zone.rows.map(row => (
+          <Row
+            key={row.id}
+            row={row}
+            categories={categories}
+            selectedSeats={selectedSeats}
+            onSeatClick={seatsSelectable ? onSeatClick : undefined}
+          />
+        ))}
+
+        {/* Zone rectangle for visual enhancement */}
+        {shouldRenderZone && (
+          <g onClick={() => onZoneClick && onZoneClick(zone.id)} style={{ cursor: 'pointer' }}>
+            <rect
+              x={minX - paddingX}
+              y={minY - paddingY}
+              width={maxX - minX + paddingX * 2}
+              height={maxY - minY + paddingY * 2}
+              fill={zoneColor}
+              fillOpacity={rectOpacity * 0.8}
+              stroke={zoneColor}
+              strokeWidth="2"
+              strokeOpacity={rectOpacity}
+              rx="8"
+              ry="8"
+              className="zone-rect"
+            />
+            <text
+              x={(minX + maxX) / 2}
+              y={(minY + maxY) / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="white"
+              fontSize={Math.max(18, (maxX - minX) / 7)}
+              fontWeight="900"
+              opacity={1 - ((zoomLevel - 1) / 1.3)}
+              pointerEvents="none"
+            >
+              {zone.name}
+            </text>
+          </g>
+        )}
+      </g>
+    </React.Fragment>
   );
 };
 
-// Optimize component with memo to prevent unnecessary re-renders
-export default React.memo(Zone);
+export default Zone;

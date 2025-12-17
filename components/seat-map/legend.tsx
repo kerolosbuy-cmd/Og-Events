@@ -75,7 +75,7 @@ const getSeatStatusItems = (): SeatStatus[] => {
       name: 'Booked',
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
-          <circle cx="8" cy="8" r="3.5" fill="#7F7F7F7f" stroke="#e0e0e0" strokeWidth="0" />
+          <circle cx="8" cy="8" r="3.5" fill="#ebebeb" stroke="#ebebeb" strokeWidth="0" />
         </svg>
       ),
     },
@@ -85,14 +85,14 @@ const getSeatStatusItems = (): SeatStatus[] => {
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
           {/* Outer ring */}
-          <circle cx="8" cy="8" r="7.2" fill="none" stroke="#444444" strokeWidth="2" />
+          <circle cx="8" cy="8" r="7.2" fill="none" stroke="#ebebeb" strokeWidth="2" />
           {/* Rotating dashed circle */}
           <circle
             cx="8"
             cy="8"
             r="5.6"
             fill="none"
-            stroke="#444444"
+            stroke="#ebebeb"
             strokeWidth="1.5"
             strokeDasharray={`${5.6 * Math.PI * 0.2} ${5.6 * Math.PI * 0.8}`}
             transform={`rotate(0 8 8)`}
@@ -108,7 +108,7 @@ const getSeatStatusItems = (): SeatStatus[] => {
             />
           </circle>
           {/* Pulsing inner circle */}
-          <circle cx="8" cy="8" r="2.4" fill="none" stroke="#444444" strokeWidth="1.5">
+          <circle cx="8" cy="8" r="2.4" fill="none" stroke="#ebebeb" strokeWidth="1.5">
             <animate attributeName="r" values="2.4;3.2;2.4" dur="2s" repeatCount="indefinite" />
             <animate
               attributeName="opacity"
@@ -118,7 +118,7 @@ const getSeatStatusItems = (): SeatStatus[] => {
             />
           </circle>
           {/* Center dot */}
-          <circle cx="8" cy="8" r="1.2" fill="#444444" />
+          <circle cx="8" cy="8" r="1.2" fill="#ebebeb" />
         </svg>
       ),
     },
@@ -127,11 +127,11 @@ const getSeatStatusItems = (): SeatStatus[] => {
       name: 'Selected',
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
-          <circle cx="8" cy="8" r="7" fill="#4444443d" stroke="#444444" strokeWidth="1" />
+          <circle cx="8" cy="8" r="7" fill="#ebebeb3d" stroke="#ebebeb" strokeWidth="1" />
           <path
             d={`M${-6 * 0.4},${0} L${-6 * 0.15},${6 * 0.3} L${6 * 0.4},${-6 * 0.3}`}
             fill="none"
-            stroke="#444444"
+            stroke="#ebebeb"
             strokeWidth={6 * 0.15}
             strokeLinecap="round"
             strokeLinejoin="round"

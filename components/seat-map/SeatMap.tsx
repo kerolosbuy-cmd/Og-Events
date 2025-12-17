@@ -7,6 +7,7 @@ import ThemeToggle from './ThemeToggle';
 import FullMapButton from './FullMapButton';
 import SVGPatterns from './SVGPatterns';
 import Zone from './Zone';
+import { calculateZoneBounds } from './utils/zoneHelpers';
 import BookingForm from './BookingForm';
 import { useSeatMap, useSeatSelection, useUIState } from './hooks';
 import { LegendItem, GuestForm } from './types';
@@ -136,6 +137,8 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
           const scale = Math.min(scaleX, scaleY) * 0.95; // 95% fit to leave some padding
 
           Viewer.current.setPointOnViewerCenter(mapData.width / 2, mapData.height / 2, scale);
+          // Set the initial zoom level state
+          setZoomLevel(scale);
           // After centering once, mark as not a full page load anymore
           setIsFullPageLoad(false);
         }
@@ -151,6 +154,8 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
       const scale = Math.min(scaleX, scaleY) * 0.95;
 
       Viewer.current.setPointOnViewerCenter(mapData.width / 2, mapData.height / 2, scale);
+      // Update the zoom level state to make zone rectangles visible
+      setZoomLevel(scale);
     }
   };
 
@@ -161,6 +166,60 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
     }
     return false;
   };
+
+  // Store current zoom level
+  const [zoomLevel, setZoomLevel] = React.useState(1);
+  // Store reference to the viewer component
+  const viewerRef = React.useRef<any>(null);
+
+  // Handle zoom changes
+  const handleZoomChange = React.useCallback((event: any) => {
+    if (event && event.a !== undefined) {
+      setZoomLevel(event.a);
+    } else {
+      preventDefault(event);
+    }
+  }, []);
+
+  // Handle zone click to zoom to the zone
+  const handleZoneClick = React.useCallback((zoneId: string) => {
+    const zone = mapData.zones.find(z => z.id === zoneId);
+    if (zone && Viewer.current) {
+      // Calculate zone bounds in global coordinates
+      const { minX, minY, maxX, maxY } = calculateZoneBounds(zone);
+      const globalMinX = minX + zone.position_x;
+      const globalMinY = minY + zone.position_y;
+      const globalMaxX = maxX + zone.position_x;
+      const globalMaxY = maxY + zone.position_y;
+      
+      // Calculate center of the zone
+      const centerX = (globalMinX + globalMaxX) / 2;
+      const centerY = (globalMinY + globalMaxY) / 2;
+      
+      // Calculate appropriate zoom level to fit the zone
+      const zoneWidth = globalMaxX - globalMinX;
+      const zoneHeight = globalMaxY - globalMinY;
+      const viewerWidth = dimensions.width;
+      const viewerHeight = dimensions.height;
+      
+      // Calculate zoom level to make the zone fill the entire screen
+      const scaleX = viewerWidth / zoneWidth;
+      const scaleY = viewerHeight / zoneHeight;
+      // Use the smaller scale to ensure the entire zone fits in the viewport
+      const newZoomLevel = Math.min(scaleX, scaleY) * 0.95; // Slightly smaller to ensure edges are visible
+      
+      // Use the built-in smooth zoom animation
+      // Get the current zoom level if available, otherwise use the calculated one
+      const currentZoom = event && event.a ? event.a : newZoomLevel;
+      Viewer.current.setPointOnViewerCenter(centerX, centerY, currentZoom, { 
+        animationTime: 600, 
+        easing: "easeInOut" 
+      });
+      
+      // Update the zoom level state to trigger rectangle opacity change
+      setZoomLevel(currentZoom);
+    }
+  }, [mapData, dimensions]);
 
   // Loading state
   if (!mapData || !mapData.width || !mapData.height) {
@@ -208,7 +267,7 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
           preventPanOutside={false}
           SVGBackground="transparent"
           scaleFactorMin={0.1}
-          onZoom={preventDefault}
+          onZoom={handleZoomChange}
           onDoubleClick={preventDefault}
 
           style={{ touchAction: 'manipulation' }}
@@ -226,6 +285,8 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
                 categories={categories}
                 selectedSeats={selectedSeats}
                 onSeatClick={handleSeatClick}
+                onZoneClick={handleZoneClick}
+                zoomLevel={zoomLevel}
               />
             ))}
           </svg>
