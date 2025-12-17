@@ -158,6 +158,18 @@ const Zone: React.FC<ZoneProps> = ({
     }
   };
 
+  // Handle click events for PC users
+  const handleClick = (e: React.MouseEvent) => {
+    // Trigger the zone click
+    if (onZoneClick) {
+      onZoneClick(zone.id);
+    }
+
+    // Prevent the event from propagating to seat elements
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
   return (
     <React.Fragment>
       {/* Main zone group with all elements */}
@@ -201,7 +213,8 @@ const Zone: React.FC<ZoneProps> = ({
               rx="8"
               ry="8"
               className="zone-rect"
-              style={{ pointerEvents: isMobile ? 'auto' : 'none' }}
+              style={{ pointerEvents: 'auto' }}
+              onClick={handleClick}
             />
             <text
               x={(minX + maxX) / 2}
