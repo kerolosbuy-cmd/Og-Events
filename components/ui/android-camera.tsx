@@ -73,7 +73,7 @@ export function AndroidCamera({ onScan, onError }: AndroidCameraProps) {
 
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError') {
-          onError('Camera permission denied. Please tap the permission icon (lock or info) in your browser's address bar, allow camera access, and refresh the page.');
+          onError('Camera permission denied. Please tap the permission icon (lock or info) in your browser\'s address bar, allow camera access, and refresh the page.');
         } else if (err.name === 'NotFoundError') {
           onError('No camera found on your device. You can upload an image with a QR code instead.');
         } else {
