@@ -4,6 +4,7 @@
 import settings from '../../../../config/settings.json';
 import { useState } from 'react';
 import { Check } from 'lucide-react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface PaymentMethod {
   image: string;
@@ -39,6 +40,7 @@ const hexToRgba = (hex: string, alpha: number) => {
 export default function PaymentMethodSelector({ isDarkMode, onMethodSelect }: PaymentMethodSelectorProps) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const { title, paymentMethods } = settings.payment.instructions;
+  const { t, isRTL } = useLanguageContext();
 
   const handleMethodClick = (method: PaymentMethod) => {
     setSelectedMethod(method);
@@ -48,7 +50,7 @@ export default function PaymentMethodSelector({ isDarkMode, onMethodSelect }: Pa
   return (
     <>
       <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
-        <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3`}>Select Payment Options</h2>
+        <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3`}>{t('selectPaymentOptions')}</h2>
         <div className="grid grid-cols-3 gap-3">
           {paymentMethods.map((method, index) => (
             <div
@@ -103,18 +105,18 @@ export default function PaymentMethodSelector({ isDarkMode, onMethodSelect }: Pa
     {selectedMethod && (
       <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
         <div className="flex items-center justify-center"></div>
-        <h3 className={`text-base font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mt-2 mb-2`}>Transfer to</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Account Number:</p>
+        <h3 className={`text-base font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mt-2 mb-2 ${isRTL() ? 'text-right' : ''}`}>{t('transferTo')}</h3>
+        <div className="space-y-2" dir={isRTL() ? 'ltr' : 'auto'}>
+          <div className={`flex ${isRTL() ? 'justify-between flex-row-reverse' : 'justify-between'} items-center`}>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} dir={isRTL() ? 'rtl' : 'ltr'}>{t('accountNumber')}:</p>
             <p className={`text-lg font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{selectedMethod.phoneNumber}</p>
           </div>
-          <div className="flex justify-between items-center">
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Account Name:</p>
+          <div className={`flex ${isRTL() ? 'justify-between flex-row-reverse' : 'justify-between'} items-center`}>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} dir={isRTL() ? 'rtl' : 'ltr'}>{t('accountName')}:</p>
             <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{selectedMethod.name}</p>
           </div>
           <div className={`mt-3 p-2 rounded-md ${isDarkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'} text-center`}>
-            <p className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>After completing your transfer, please upload a clear screenshot of your payment confirmation</p>
+            <p className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>{t('uploadPaymentConfirmation')}</p>
           </div>
         </div>
       </div>

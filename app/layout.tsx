@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { PendingBookingRedirect } from '@/components/pending-booking-redirect';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { LanguageDirection } from '@/components/LanguageDirection';
 import './globals.css';
 
 const defaultUrl = process.env.NEXT_PUBLIC_BASE_URL
@@ -28,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning dir="ltr">
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -36,8 +38,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PendingBookingRedirect />
-          {children}
+          <LanguageProvider>
+            <LanguageDirection>
+              <PendingBookingRedirect />
+              {children}
+            </LanguageDirection>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

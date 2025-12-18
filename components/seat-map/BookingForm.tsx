@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X, Tickets, ChevronUp } from 'lucide-react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 import { Seat, Zone, Category } from './types';
 import { calculateTotalPrice, findZoneNameByRowId, findRowNumberByRowId, getSeatPrice } from './utils/seatHelpers';
 import { bookingSchema, BookingSchema } from '@/lib/validators/booking';
@@ -29,6 +30,23 @@ const BookingForm: React.FC<BookingFormProps> = ({
   categories = {},
   isLoading = false,
 }) => {
+  const { t, isRTL, language } = useLanguageContext();
+  
+  // Force re-render when language changes
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  
+  React.useEffect(() => {
+    // Listen for language changes
+    const handleLanguageChange = () => {
+      forceUpdate();
+    };
+    
+    window.addEventListener('languageChange', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('languageChange', handleLanguageChange);
+    };
+  }, [language]);
   // State for mobile expand/collapse
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -102,7 +120,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     <div
       className={`absolute z-20 transition-all duration-300 transform ${isMobile
           ? `bottom-0 left-0 right-0 rounded-t-3xl ${isExpanded ? 'h-[87vh]' : 'h-auto'}`
-          : 'top-4 right-4 right-4'
+          : `top-4 ${isRTL() ? 'left-4' : 'right-4'}`
         }`}
     >
       <div
@@ -127,11 +145,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <h3
                 className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-gray-800'} leading-none mb-1`}
               >
-                Selection
+                {t('selection')}
               </h3>
               <div className="flex items-center gap-2">
                 <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {selectedSeats.length} seats
+                  {selectedSeats.length} {t('seats')}
                 </span>
                 <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>|</span>
                 <button
@@ -142,13 +160,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   className={`text-xs font-medium ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}
                   type="button"
                 >
-                  Clear All
+                  {t('clearAll')}
                 </button>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="bg-yellow-400 text-black font-bold px-3 py-1 rounded-lg shadow-lg text-sm">
-                {totalPrice} EGP
+                {totalPrice} {isRTL() ? 'ج • م' : 'EGP'}
               </div>
               {isMobile && (
                 <div
@@ -170,7 +188,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...register('name')}
                   type="text"
                   className={getInputClasses(!!errors.name)}
-                  placeholder="Name"
+                  placeholder={t('name')}
                 />
               </div>
               <div>
@@ -178,7 +196,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...register('email')}
                   type="email"
                   className={getInputClasses(!!errors.email)}
-                  placeholder="Email"
+                  placeholder={t('email')}
                 />
               </div>
             </div>
@@ -187,8 +205,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 <input
                   {...register('phone')}
                   type="tel"
-                  className={getInputClasses(!!errors.phone)}
-                  placeholder="Phone"
+                  className={`${getInputClasses(!!errors.phone)} ${isRTL() ? 'text-right' : ''}`}
+                  placeholder={t('phone')}
+                  dir={isRTL() ? 'rtl' : 'ltr'}
                 />
               </div>
               <button
@@ -196,7 +215,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 disabled={selectedSeats.length === 0 || isLoading || !isValid}
                 className={`bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold py-1.5 rounded-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
               >
-                {isLoading ? 'Booking...' : 'Book Now'}
+                {isLoading ? t('bookingProgress') : t('bookNow')}
                 {!isLoading && <Tickets width={14} height={14} />}
               </button>
             </div>
@@ -237,8 +256,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     {seat.category}
                   </span>
                   <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Zone {findZoneNameByRowId(zones, seat.row_id)} • Row{' '}
-                    {findRowNumberByRowId(zones, seat.row_id)} • Seat {seat.seat_number}
+                    {t('zone')} {findZoneNameByRowId(zones, seat.row_id)} {t('row')}{' '}
+                    {findRowNumberByRowId(zones, seat.row_id)} {t('seat')} {seat.seat_number}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -268,7 +287,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...register('name')}
                   type="text"
                   className={getInputClasses(!!errors.name)}
-                  placeholder="Name"
+                  placeholder={t('name')}
                 />
               </div>
               <div>
@@ -276,7 +295,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...register('email')}
                   type="email"
                   className={getInputClasses(!!errors.email)}
-                  placeholder="Email"
+                  placeholder={t('email')}
                 />
               </div>
             </div>
@@ -285,8 +304,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 <input
                   {...register('phone')}
                   type="tel"
-                  className={getInputClasses(!!errors.phone)}
-                  placeholder="Phone"
+                  className={`${getInputClasses(!!errors.phone)} ${isRTL() ? 'text-right' : ''}`}
+                  placeholder={t('phone')}
+                  dir={isRTL() ? 'rtl' : 'ltr'}
                 />
               </div>
               <button
@@ -294,7 +314,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 disabled={selectedSeats.length === 0 || isLoading || !isValid}
                 className={`bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold py-1.5 rounded-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
               >
-                {isLoading ? 'Booking...' : 'Book Now'}
+                {isLoading ? t('bookingProgress') : t('bookNow')}
                 {!isLoading && <Tickets width={14} height={14} />}
               </button>
             </div>

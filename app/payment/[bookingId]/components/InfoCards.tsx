@@ -2,6 +2,7 @@
 'use client';
 
 import { Clock, Banknote, Armchair } from 'lucide-react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface InfoCardsProps {
   bookingDetails: any;
@@ -11,6 +12,7 @@ interface InfoCardsProps {
 }
 
 export default function InfoCards({ bookingDetails, timeLeft, formattedTime, isDarkMode }: InfoCardsProps) {
+  const { t, isRTL } = useLanguageContext();
   const isTimeRunningOut = timeLeft < 60;
 
   return (
@@ -21,7 +23,7 @@ export default function InfoCards({ bookingDetails, timeLeft, formattedTime, isD
         <div className={`text-lg font-bold ${isTimeRunningOut ? (isDarkMode ? 'text-red-400' : 'text-red-600') : isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {formattedTime}
         </div>
-        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>Time Left</div>
+        <div className={`text-xs ${isRTL() ? 'text-lg font-bold' : ''} ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>{t('timeLeft')}</div>
       </div>
 
       {/* Amount Card */}
@@ -30,7 +32,7 @@ export default function InfoCards({ bookingDetails, timeLeft, formattedTime, isD
         <div className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {bookingDetails.amount}
         </div>
-        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>EGP</div>
+        <div className={`text-xs ${isRTL() ? 'text-lg font-bold' : ''} ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>{isRTL() ? 'جنية مصري' : 'EGP'}</div>
       </div>
 
       {/* Seats Card */}
@@ -39,7 +41,7 @@ export default function InfoCards({ bookingDetails, timeLeft, formattedTime, isD
         <div className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {bookingDetails.seats?.length || 0}
         </div>
-        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>Seats</div>
+        <div className={`text-xs ${isRTL() ? 'text-lg font-bold' : ''} ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center mt-1`}>{t('seats')}</div>
       </div>
     </div>
   );

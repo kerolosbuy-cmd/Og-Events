@@ -4,6 +4,7 @@
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface BookingDetailsCardProps {
   bookingId: string;
@@ -13,10 +14,11 @@ interface BookingDetailsCardProps {
 
 export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMode }: BookingDetailsCardProps) {
   const router = useRouter();
+  const { t, isRTL } = useLanguageContext();
   const [isCancelling, setIsCancelling] = useState(false);
   
   const handleCancelBooking = async () => {
-    if (window.confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+    if (window.confirm(t('cancelBookingConfirm'))) {
       setIsCancelling(true);
       try {
         // Import Supabase
@@ -30,7 +32,7 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
 
         if (error) {
           console.error('Error cancelling booking:', error);
-          alert('Failed to cancel booking. Please try again.');
+          alert(t('cancelBookingFailed'));
         } else {
           // Remove the pending booking from local storage
           localStorage.removeItem('pendingBooking');
@@ -40,7 +42,7 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
         }
       } catch (err) {
         console.error('Error cancelling booking:', err);
-        alert('An error occurred while cancelling the booking.');
+        alert(t('cancelBookingError'));
       } finally {
         setIsCancelling(false);
       }
@@ -51,8 +53,8 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
     <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
       <div className={`flex justify-between items-start`}>
         <div className="flex flex-col">
-          <p className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{bookingDetails.name || 'Guest User'}</p>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>{bookingDetails.phone || 'No phone number'}</p>
+          <p className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{bookingDetails.name || t('guestUser')}</p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>{bookingDetails.phone || t('noPhoneNumber')}</p>
         </div>
         <div className="flex flex-col items-end">
           <button
@@ -63,12 +65,12 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
             {isCancelling ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1"></div>
-                Cancelling...
+                {t('cancelling')}
               </>
             ) : (
               <>
                 <X className="h-4 w-4 mr-1" />
-                Cancel Booking
+                {t('cancelBooking')}
               </>
             )}
           </button>

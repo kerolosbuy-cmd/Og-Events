@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 // Type definitions for better type safety
 interface LegendItem {
@@ -18,10 +19,10 @@ interface SeatStatus {
 }
 
 // Reusable component for price items
-const PriceItem = ({ item, isDarkMode }: { item: LegendItem; isDarkMode: boolean }) => {
+const PriceItem = ({ item, isDarkMode, isRTL }: { item: LegendItem; isDarkMode: boolean; isRTL: () => boolean }) => {
   return (
     <div className="flex items-center justify-between group -mx-2 px-1 py-0.5 rounded-md">
-      <div className="flex items-center space-x-3">
+      <div className={`flex items-center ${isRTL ? (isRTL() ? "space-x-reverse space-x-3" : "space-x-3") : "space-x-3"}`}>
         <div className="relative w-4 h-4 flex items-center justify-center">
           <svg width="20" height="20" viewBox="0 0 16 16" className="absolute inset-0">
             <circle cx="8" cy="8" r="7" fill={item.color} stroke="transparent" strokeWidth="0" />
@@ -40,7 +41,7 @@ const PriceItem = ({ item, isDarkMode }: { item: LegendItem; isDarkMode: boolean
         <span className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {item.price}{' '}
           <span className={`text-xs font-normal ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-            EGP
+            {isRTL() ? (isRTL() ? ('ج • م') : 'EGP') : 'EGP'}
           </span>
         </span>
       </div>
@@ -54,10 +55,10 @@ const PriceItem = ({ item, isDarkMode }: { item: LegendItem; isDarkMode: boolean
 };
 
 // Reusable component for status items
-const StatusItem = ({ status, isDarkMode }: { status: SeatStatus; isDarkMode: boolean }) => {
+const StatusItem = ({ status, isDarkMode, isRTL }: { status: SeatStatus; isDarkMode: boolean;isRTL: () => boolean }) => {
   return (
     <div className="flex items-center justify-between group -mx-2 px-1 py-0.5 rounded-md">
-      <div className="flex items-center space-x-3">
+      <div className={`flex items-center ${isRTL ? (isRTL() ? "space-x-reverse space-x-3" : "space-x-3") : "space-x-3"}`}>
         <div className="relative w-4 h-4 flex items-center justify-center">{status.icon}</div>
         <span className={`font-medium text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {status.name}
@@ -68,11 +69,11 @@ const StatusItem = ({ status, isDarkMode }: { status: SeatStatus; isDarkMode: bo
 };
 
 // Predefined status items with their icons
-const getSeatStatusItems = (): SeatStatus[] => {
+const getSeatStatusItems = (t: Function): SeatStatus[] => {
   return [
     {
       id: 'booked',
-      name: 'Booked',
+      name: t('booked'),
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
           <circle cx="8" cy="8" r="3.5" fill="#ebebeb" stroke="#ebebeb" strokeWidth="0" />
@@ -81,7 +82,7 @@ const getSeatStatusItems = (): SeatStatus[] => {
     },
     {
       id: 'hold',
-      name: 'Hold',
+      name: t('hold'),
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
           {/* Outer ring */}
@@ -124,7 +125,7 @@ const getSeatStatusItems = (): SeatStatus[] => {
     },
     {
       id: 'selected',
-      name: 'Selected',
+      name: t('selected'),
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" className="absolute inset-0">
           <circle cx="8" cy="8" r="7" fill="#ebebeb3d" stroke="#ebebeb" strokeWidth="1" />
@@ -156,6 +157,22 @@ const SeatMapLegendSimple = ({
   showStatusItems?: boolean;
   isCollapsed?: boolean;
 }) => {
+  // Force re-render when language changes
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  const { language } = useLanguageContext();
+  
+  React.useEffect(() => {
+    // Listen for language changes
+    const handleLanguageChange = () => {
+      forceUpdate();
+    };
+    
+    window.addEventListener('languageChange', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('languageChange', handleLanguageChange);
+    };
+  }, [language]);
   // Use external isCollapsed state if provided, otherwise use internal state
   const [internalIsCollapsed, setInternalIsCollapsed] = React.useState(false);
   const [autoCollapsed, setAutoCollapsed] = React.useState(false);
@@ -178,11 +195,12 @@ const SeatMapLegendSimple = ({
     }
     setInternalIsCollapsed(!isCollapsed);
   };
-  const statusItems = getSeatStatusItems();
+  const { t, isRTL } = useLanguageContext();
+  const statusItems = getSeatStatusItems(t);
 
   return (
     <div
-      className={`left-4 top-4 border rounded-xl shadow-xl z-10 transition-all duration-300 flex-grow`}
+      className={`${isRTL() ? 'right-4' : 'left-4'} top-4 border rounded-xl shadow-xl z-10 transition-all duration-300 flex-grow`}
       style={{
         backgroundColor: isDarkMode ? 'rgb(0 0 0 / 0.6)' : 'rgb(255 255 255 / 0.6)',
         borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
@@ -196,7 +214,7 @@ const SeatMapLegendSimple = ({
         <h2
           className={`text-lg font-semibold tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
         >
-          {venueName || 'Seat Map Legend'}
+          {venueName || t('seatMapLegend')}
         </h2>
         <div
           className={`p-1 rounded-full transition-transform duration-300 ${isCollapsed ? 'rotate-90' : ''} ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
@@ -225,7 +243,7 @@ const SeatMapLegendSimple = ({
           <div key="price-section" className="space-y-2">
             <div className="space-y-1">
               {legendItems.map(item => (
-                <PriceItem key={item.id} item={item} isDarkMode={isDarkMode} />
+                <PriceItem key={item.id} item={item} isDarkMode={isDarkMode} isRTL={isRTL} />
               ))}
             </div>
           </div>
@@ -241,7 +259,7 @@ const SeatMapLegendSimple = ({
           <div key="status-section" className="space-y-2">
             <div className="space-y-1">
               {statusItems.map(status => (
-                <StatusItem key={status.id} status={status} isDarkMode={isDarkMode} />
+                <StatusItem key={status.id} status={status} isDarkMode={isDarkMode} isRTL={isRTL} />
               ))}
             </div>
           </div>

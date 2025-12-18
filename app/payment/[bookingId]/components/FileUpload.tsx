@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { Upload, X, Image, Loader } from 'lucide-react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface FileUploadProps {
   file: File | null;
@@ -12,6 +13,8 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({ file, isDarkMode, isConverting, handleFileChange }: FileUploadProps) {
+  const { t, isRTL } = useLanguageContext();
+  
   const handleRemoveFile = () => {
     // Create a synthetic event to trigger the handleFileChange with null file
     const syntheticEvent = {
@@ -28,7 +31,7 @@ export default function FileUpload({ file, isDarkMode, isConverting, handleFileC
           <div className="flex items-center justify-center space-x-3">
             <Loader className={`h-5 w-5 animate-spin ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
             <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Converting image...
+              {t('convertingImage')}
             </p>
           </div>
         </div>
@@ -36,7 +39,7 @@ export default function FileUpload({ file, isDarkMode, isConverting, handleFileC
         // File selected preview
         <div className={`relative ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-4`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className={`flex items-center ${isRTL() ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}>
               {file.type.startsWith('image/') ? (
                 <div className="relative h-12 w-12 overflow-hidden rounded-md">
                   <img
@@ -74,10 +77,10 @@ export default function FileUpload({ file, isDarkMode, isConverting, handleFileC
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
             <Upload className={`w-8 h-8 mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
             <p className={`mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <span className="font-semibold">Click to upload</span> or drag and drop
+              <span className="font-semibold">{t('clickToUpload')}</span> {t('orDragAndDrop')}
             </p>
             <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              PNG, JPG, GIF, HEIC or PDF (MAX. 10MB)
+              {t('supportedFormats')}
             </p>
           </div>
           <input

@@ -4,6 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { CreditCard } from 'lucide-react';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface ActionButtonsProps {
   isDarkMode: boolean;
@@ -25,6 +26,7 @@ export default function ActionButtons({
   paymentMode
 }: ActionButtonsProps) {
   const router = useRouter();
+  const { t, isRTL } = useLanguageContext();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const handleOnlinePayment = async () => {
@@ -93,7 +95,7 @@ export default function ActionButtons({
   };
 
   return (
-    <div className="flex gap-3 mt-6">
+    <div className={`flex ${isRTL() ? 'flex-row-reverse' : 'flex-row'} gap-3 mt-6`}>
       {/* Upload Button - Only show for manual payment mode */}
       {paymentMode === 'manual' && (
         <button
@@ -104,12 +106,12 @@ export default function ActionButtons({
         >
           {isUploading ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Uploading...
+              <div className={`animate-spin rounded-full h-4 w-4 border-b-2 border-white ${isRTL() ? 'ml-2' : 'mr-2'}`}></div>
+              {t('uploading')}
             </>
           ) : (
             <>
-              Upload
+              {t('upload')}
             </>
           )}
         </button>
@@ -125,13 +127,13 @@ export default function ActionButtons({
         >
           {isProcessingPayment ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Processing...
+              <div className={`animate-spin rounded-full h-4 w-4 border-b-2 border-white ${isRTL() ? 'ml-2' : 'mr-2'}`}></div>
+              {t('processing')}
             </>
           ) : (
             <>
-              <CreditCard className="h-4 w-4 mr-2" />
-              Pay Online
+              <CreditCard className={`h-4 w-4 ${isRTL() ? 'ml-2' : 'mr-2'}`} />
+              {t('payOnline')}
             </>
           )}
         </button>

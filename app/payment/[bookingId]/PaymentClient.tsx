@@ -10,6 +10,7 @@ import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
 import SuccessState from './components/SuccessState';
 import PaymentPage from './components/PaymentPage';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface PaymentClientProps {
     bookingId: string;
@@ -17,6 +18,7 @@ interface PaymentClientProps {
 
 export default function PaymentClient({ bookingId }: PaymentClientProps) {
     // Initialize hooks
+    const { t } = useLanguageContext();
     const { bookingDetails, loading: detailsLoading, error: detailsError } = useBookingDetails(bookingId);
     const { timeLeft, formattedTime, isExpired } = useCountdown(bookingDetails?.created_at || null);
     const {
@@ -42,7 +44,7 @@ export default function PaymentClient({ bookingId }: PaymentClientProps) {
     }
 
     // Handle error state
-    const error = detailsError || (isExpired ? 'Time expired. Your booking has been released.' : submissionError);
+    const error = detailsError || (isExpired ? t('bookingExpired') : submissionError);
     if (error && !success) {
         // Remove saved booking ID if the booking is expired or invalid
         if (isExpired || detailsError) {

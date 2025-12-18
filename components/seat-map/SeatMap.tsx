@@ -13,6 +13,7 @@ import BookingForm from './BookingForm';
 import { useSeatMap, useSeatSelection, useUIState } from './hooks';
 import { LegendItem, GuestForm } from './types';
 import Notification from '../booking/Notifications';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface SeatMapFloatProps {
   planId: string;
@@ -22,6 +23,23 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
   // Initialize hooks
   const Viewer = React.useRef<any>(null);
   const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+  const { t, isRTL, language } = useLanguageContext();
+  
+  // Force re-render when language changes
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  
+  React.useEffect(() => {
+    // Listen for language changes
+    const handleLanguageChange = () => {
+      forceUpdate();
+    };
+    
+    window.addEventListener('languageChange', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('languageChange', handleLanguageChange);
+    };
+  }, [language]);
 
   // State to track if the legend should be collapsed on mobile
   const [legendCollapsed, setLegendCollapsed] = React.useState(false);
@@ -76,8 +94,7 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
       if (result.success) {
         setNotification({
           type: 'success',
-          message:
-            'Seats held for 60 minutes. Please upload payment proof to complete your booking.',
+          message: t('bookingHoldMessage'),
           isVisible: true,
         });
       } else if (result.error) {
@@ -239,7 +256,7 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
 
   // Loading state
   if (!mapData || !mapData.width || !mapData.height) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">{t('loading')}</div>;
   }
 
   // Prepare legend items
@@ -257,13 +274,13 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
     <div
       className={`relative w-full h-screen overflow-hidden ${
         isDarkMode ? 'bg-gray-900' : 'bg-white'
-      }`}
+      } ${isRTL() ? 'rtl' : ''}`}
     >
       {/* SVG Definitions */}
       <SVGPatterns />
 
-      {/* LEFT FLOATING PANEL: LEGEND AND THEME SWITCHER */}
-      <div className="absolute left-4 top-4 z-10 flex flex-row gap-3 items-start w-[330px]">
+      {/* FLOATING PANEL: LEGEND AND THEME SWITCHER */}
+      <div className={`absolute ${isRTL() ? 'right-4' : 'left-4'} top-4 z-10 flex flex-row gap-3 items-start w-[330px]`}>
         <SeatMapLegendSimple
           isDarkMode={isDarkMode}
           legendItems={legendItems}

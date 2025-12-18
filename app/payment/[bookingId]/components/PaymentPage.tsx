@@ -10,6 +10,7 @@ import PaymentMethodSelector from './PaymentMethodSelector';
 import FileUpload from './FileUpload';
 import ActionButtons from './ActionButtons';
 import settings from '../../../../config/settings.json';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface PaymentMethod {
   image: string;
@@ -43,6 +44,7 @@ export default function PaymentPage({
   handleSubmit
 }: PaymentPageProps) {
   const { isDarkMode } = useDarkMode();
+  const { t, isRTL } = useLanguageContext();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const paymentMode = settings.payment.mode;
 
@@ -51,7 +53,7 @@ export default function PaymentPage({
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col ${isRTL() ? 'rtl' : ''}`}>
       <div className="flex-grow px-4 py-6 max-w-lg mx-auto w-full flex flex-col justify-center">
         {/* Booking Details Section */}
         <BookingDetailsCard
@@ -81,7 +83,7 @@ export default function PaymentPage({
           <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
             <div className="flex items-center mb-4">
               <Upload className={`h-5 w-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} mr-2`} />
-              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Upload Payment Proof</h2>
+              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{t('uploadPaymentProof')}</h2>
             </div>
 
             <form onSubmit={handleSubmit}>

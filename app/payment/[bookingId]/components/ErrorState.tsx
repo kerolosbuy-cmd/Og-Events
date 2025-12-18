@@ -4,6 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { getPendingBooking } from '@/lib/booking-redirect';
+import { useLanguageContext } from '@/contexts/LanguageContext';
 
 interface ErrorStateProps {
   error: string;
@@ -11,6 +12,7 @@ interface ErrorStateProps {
 
 export default function ErrorState({ error }: ErrorStateProps) {
   const router = useRouter();
+  const { t, isRTL } = useLanguageContext();
 
   const handleGoBack = () => {
     // Check if booking is expired and mark it as shown
@@ -34,13 +36,13 @@ export default function ErrorState({ error }: ErrorStateProps) {
     <div className="w-full h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
       <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-xl shadow-xl p-6 text-center border border-white/10">
         <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-white mb-2">Error</h2>
+        <h2 className="text-xl font-semibold text-white mb-2">{t('error')}</h2>
         <p className="text-gray-300 mb-6">{error}</p>
         <button
           onClick={handleGoBack}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
         >
-          Go Back
+          {t('back')}
         </button>
       </div>
     </div>
