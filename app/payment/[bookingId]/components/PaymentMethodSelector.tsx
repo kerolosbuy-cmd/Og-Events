@@ -46,12 +46,13 @@ export default function PaymentMethodSelector({ isDarkMode, onMethodSelect }: Pa
   };
 
   return (
-    <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
-      <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3`}>Select Payment Options</h2>
-      <div className="grid grid-cols-3 gap-3">
-        {paymentMethods.map((method, index) => (
-          <div
-            key={index}
+    <>
+      <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
+        <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3`}>Select Payment Options</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {paymentMethods.map((method, index) => (
+            <div
+              key={index}
             className={`p-3 rounded-lg cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-md ${
               selectedMethod?.title === method.title
                 ? isDarkMode ? 'ring-2 ring-white shadow-lg scale-[1.02] opacity-100' : 'ring-2 ring-gray-800 shadow-lg scale-[1.02] opacity-100'
@@ -96,16 +97,28 @@ export default function PaymentMethodSelector({ isDarkMode, onMethodSelect }: Pa
         ))}
       </div>
       
-      {/* Payment details container */}
-      {selectedMethod && (
-        <div className={`mt-4 p-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-          <div className="flex items-center justify-center"></div>
-          <div className="mt-2 text-center space-y-1">
+    </div>
+
+    {/* Payment details container - moved outside payment options container */}
+    {selectedMethod && (
+      <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 mb-3`}>
+        <div className="flex items-center justify-center"></div>
+        <h3 className={`text-base font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mt-2 mb-2`}>Transfer to</h3>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Account Number:</p>
             <p className={`text-lg font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{selectedMethod.phoneNumber}</p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{selectedMethod.name}</p>
+          </div>
+          <div className="flex justify-between items-center">
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Account Name:</p>
+            <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{selectedMethod.name}</p>
+          </div>
+          <div className={`mt-3 p-2 rounded-md ${isDarkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'} text-center`}>
+            <p className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>After completing your transfer, please upload a clear screenshot of your payment confirmation</p>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   );
 }
