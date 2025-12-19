@@ -2,7 +2,22 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 
+// Handle OPTIONS requests for CORS
+export async function OPTIONS(request: Request) {
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  return new NextResponse(null, { status: 200, headers });
+}
+
 export async function POST(request: Request) {
+  // Set CORS headers
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   try {
     const body = await request.text();
     const data = new URLSearchParams(body);
@@ -15,7 +30,7 @@ export async function POST(request: Request) {
       console.error('Missing API key');
       return NextResponse.json(
         { error: 'Server configuration error' },
-        { status: 500 }
+        { status: 500, headers }
       );
     }
 
@@ -32,7 +47,7 @@ export async function POST(request: Request) {
       console.error('Invalid signature');
       return NextResponse.json(
         { error: 'Invalid signature' },
-        { status: 401 }
+        { status: 401, headers }
       );
     }
 
@@ -45,7 +60,7 @@ export async function POST(request: Request) {
       console.error('Missing order ID');
       return NextResponse.json(
         { error: 'Missing order ID' },
-        { status: 400 }
+        { status: 400, headers }
       );
     }
 
@@ -65,7 +80,7 @@ export async function POST(request: Request) {
         console.error('Error updating booking status:', error);
         return NextResponse.json(
           { error: 'Failed to update booking status' },
-          { status: 500 }
+          { status: 500, headers }
         );
       }
 
@@ -84,19 +99,19 @@ export async function POST(request: Request) {
         console.error('Error updating booking status:', error);
         return NextResponse.json(
           { error: 'Failed to update booking status' },
-          { status: 500 }
+          { status: 500, headers }
         );
       }
 
       console.log(`Payment failed for booking ${orderId}`);
     }
 
-    return NextResponse.json({ status: 'success' });
+    return NextResponse.json({ status: 'success' }, { headers });
   } catch (error) {
     console.error('Error processing webhook:', error);
     return NextResponse.json(
       { error: 'Failed to process webhook' },
-      { status: 500 }
+      { status: 500, headers }
     );
   }
 }

@@ -3,6 +3,12 @@ import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
+    // Set CORS headers
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    
     const { amount, currency, orderId } = await request.json();
 
     // Get merchant ID and API key from environment variables
@@ -10,18 +16,28 @@ export async function POST(request: Request) {
     const secret = process.env.KASHIER_API_KEY;
 
     if (!mid || !secret) {
-      return NextResponse.json({ error: 'Missing merchant ID or API key' }, { status: 500 });
+      return NextResponse.json({ error: 'Missing merchant ID or API key' }, { status: 500, headers });
     }
 
     // Generate the hash - updated format for Kashier
     const path = `/?payment=${mid}.${orderId}.${amount}.${currency}`;
     const hash = crypto.createHmac('sha256', secret).update(path).digest('hex');
 
-    return NextResponse.json({ hash });
+    return NextResponse.json({ hash }, { headers });
   } catch (error) {
     console.error('Error generating payment hash:', error);
     return NextResponse.json({ error: 'Failed to generate payment hash' }, { status: 500 });
   }
+}
+
+export async function OPTIONS(request: Request) {
+  // Handle preflight requests
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept');
+  
+  return new NextResponse(null, { status: 200, headers });
 }
 
 export async function GET(request: Request) {

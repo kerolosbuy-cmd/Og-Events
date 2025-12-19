@@ -54,12 +54,14 @@ export default function ActionButtons({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           amount: amount,
           currency: 'EGP', // Default currency, can be adjusted
           orderId: bookingId,
         }),
+        cache: 'no-store',
       });
 
       if (!response.ok) {

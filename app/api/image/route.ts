@@ -1,13 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Handle OPTIONS requests for CORS
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  return new NextResponse(null, { status: 200, headers });
+}
+
 export async function GET(request: NextRequest) {
+  // Set CORS headers
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   try {
     const searchParams = request.nextUrl.searchParams;
     const src = searchParams.get('src');
 
     if (!src) {
-      return NextResponse.json({ error: 'Missing src parameter' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing src parameter' }, { status: 400, headers });
     }
 
     // Create a Supabase client with service role key for admin access
@@ -17,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: 'Missing Supabase environment variables' },
-        { status: 500 }
+        { status: 500, headers }
       );
     }
 
@@ -28,7 +43,7 @@ export async function GET(request: NextRequest) {
     const bucketIndex = urlParts.findIndex(part => part === 'public' || part === 'authenticated');
 
     if (bucketIndex === -1 || bucketIndex + 1 >= urlParts.length) {
-      return NextResponse.json({ error: 'Invalid image URL format' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid image URL format' }, { status: 400, headers });
     }
 
     const bucket = urlParts[bucketIndex + 1];
@@ -38,12 +53,12 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(path, 3600);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500, headers });
     }
 
-    return NextResponse.json({ signedUrl: data.signedUrl });
+    return NextResponse.json({ signedUrl: data.signedUrl }, { headers });
   } catch (error: any) {
     console.error('Error in image API:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500, headers });
   }
 }
