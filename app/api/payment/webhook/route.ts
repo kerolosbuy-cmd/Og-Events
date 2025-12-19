@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         .from('bookings')
         .update({ 
           status: 'confirmed',
-          payment_method: 'online',
+          payment_method: 'Kashier',
           payment_id: transactionId,
           updated_at: new Date().toISOString()
         })
@@ -100,3 +100,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
