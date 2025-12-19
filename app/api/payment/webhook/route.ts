@@ -8,7 +8,7 @@ export async function OPTIONS(request: Request) {
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   return new NextResponse(null, { status: 200, headers });
 }
 
@@ -28,10 +28,7 @@ export async function POST(request: Request) {
 
     if (!secret) {
       console.error('Missing API key');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500, headers }
-      );
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500, headers });
     }
 
     // Validate the signature
@@ -45,10 +42,7 @@ export async function POST(request: Request) {
 
     if (signature !== params.signature) {
       console.error('Invalid signature');
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401, headers }
-      );
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401, headers });
     }
 
     // Extract payment details
@@ -58,21 +52,17 @@ export async function POST(request: Request) {
 
     if (!orderId) {
       console.error('Missing order ID');
-      return NextResponse.json(
-        { error: 'Missing order ID' },
-        { status: 400, headers }
-      );
+      return NextResponse.json({ error: 'Missing order ID' }, { status: 400, headers });
     }
 
     // Update booking status based on payment status
     if (paymentStatus === 'SUCCESS') {
       const { error } = await supabase
         .from('bookings')
-        .update({ 
+        .update({
           status: 'confirmed',
           payment_method: 'Kashier',
-          payment_id: transactionId,
-          updated_at: new Date().toISOString()
+          kashier_transaction_Id: transactionId,
         })
         .eq('id', orderId);
 
@@ -89,9 +79,9 @@ export async function POST(request: Request) {
       // Handle failed payment
       const { error } = await supabase
         .from('bookings')
-        .update({ 
+        .update({
           status: 'payment_failed',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', orderId);
 
@@ -109,10 +99,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: 'success' }, { headers });
   } catch (error) {
     console.error('Error processing webhook:', error);
-    return NextResponse.json(
-      { error: 'Failed to process webhook' },
-      { status: 500, headers }
-    );
+    return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500, headers });
   }
 }
-
