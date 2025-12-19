@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { getPendingBookingsWithImages, BookingData } from './actions';
 import BookingsTable from './BookingsTable';
 import { ArrowLeft, Clock, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { isAuthorizedAdmin } from '@/lib/admin';
 
 async function goBackToDashboard() {
   'use server';
@@ -24,13 +25,7 @@ async function BookingsContent() {
   }
 
   // Check if the user is an authorized admin
-  const authorizedAdmins = [
-    'kerolos4work@gmail.com',
-    'miraphilip2012@gmail.com',
-    // Add more admin email(s) here
-  ];
-
-  if (authorizedAdmins.length > 0 && !authorizedAdmins.includes(user.email || '')) {
+  if (!isAuthorizedAdmin(user.email)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
         <Card className="w-full max-w-md shadow-xl border-0 bg-white/70 backdrop-blur-sm dark:bg-slate-800/70">

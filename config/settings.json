@@ -1,4 +1,10 @@
 {
+  "admin": {
+    "authorizedAdmins": [
+      "kerolos4work@gmail.com",
+      "miraphilip2012@gmail.com"
+    ]
+  },
   "payment": {
     "mode": "online",
     "timeLimit": 7,
