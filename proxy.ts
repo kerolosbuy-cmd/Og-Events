@@ -3,6 +3,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
+  const url = request.nextUrl.clone();
+
+  // Handle trailing slash for webhook endpoint specifically
+  if (url.pathname === '/api/payment/webhook/' && request.method === 'POST') {
+    url.pathname = '/api/payment/webhook';
+    return NextResponse.rewrite(url);
+  }
+
   // Update session and handle authentication
   const response = await updateSession(request);
 

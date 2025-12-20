@@ -95,7 +95,7 @@ export default function ActionButtons({
       paymentUrl.searchParams.append('currency', 'EGP');
       paymentUrl.searchParams.append('hash', data.hash);
       paymentUrl.searchParams.append('mode', 'test'); // Change to 'live' for production
-      paymentUrl.searchParams.append('merchantRedirect', `${origin}/payment/success`);
+      paymentUrl.searchParams.append('merchantRedirect', `${origin}/payment/success-Remove`);
       // paymentUrl.searchParams.append('serverWebhook', `${baseUrl}/api/payment/webhook/`);
       paymentUrl.searchParams.append(
         'serverWebhook',
@@ -126,7 +126,7 @@ export default function ActionButtons({
   };
 
   return (
-    <div className={`flex ${isRTL() ? 'flex-row-reverse' : 'flex-row'} gap-3 mt-6`}>
+    <div className={`flex ${isRTL() ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
       {/* Upload Button - Only show for manual payment mode */}
       {paymentMode === 'manual' && (
         <button

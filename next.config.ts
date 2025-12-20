@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   cacheComponents: true,
   productionBrowserSourceMaps: false, // Disable source maps in production to avoid parsing errors
+  skipTrailingSlashRedirect: true, // Prevent redirects that lose POST data
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

@@ -6,7 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X, Tickets, ChevronUp } from 'lucide-react';
 import { useLanguageContext } from '@/contexts/LanguageContext';
 import { Seat, Zone, Category } from './types';
-import { calculateTotalPrice, findZoneNameByRowId, findRowNumberByRowId, getSeatPrice } from './utils/seatHelpers';
+import {
+  calculateTotalPrice,
+  findZoneNameByRowId,
+  findRowNumberByRowId,
+  getSeatPrice,
+} from './utils/seatHelpers';
 import { bookingSchema, BookingSchema } from '@/lib/validators/booking';
 
 interface BookingFormProps {
@@ -31,18 +36,18 @@ const BookingForm: React.FC<BookingFormProps> = ({
   isLoading = false,
 }) => {
   const { t, isRTL, language } = useLanguageContext();
-  
+
   // Force re-render when language changes
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
-  
+
   React.useEffect(() => {
     // Listen for language changes
     const handleLanguageChange = () => {
       forceUpdate();
     };
-    
+
     window.addEventListener('languageChange', handleLanguageChange);
-    
+
     return () => {
       window.removeEventListener('languageChange', handleLanguageChange);
     };
@@ -109,25 +114,29 @@ const BookingForm: React.FC<BookingFormProps> = ({
   // Base input styles
   const inputBaseClasses = `px-2 py-1.5 rounded-lg border text-sm w-full focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors`;
   const getInputClasses = (hasError: boolean) => {
-    if (hasError) return `${inputBaseClasses} border-red-500 focus:ring-red-500 bg-red-50 text-red-900 placeholder-red-300`;
-    return `${inputBaseClasses} ${isDarkMode
-      ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-transparent'
-      : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-500 focus:ring-blue-500 focus:border-transparent'
-      }`;
+    if (hasError)
+      return `${inputBaseClasses} border-red-500 focus:ring-red-500 bg-red-50 text-red-900 placeholder-red-300`;
+    return `${inputBaseClasses} ${
+      isDarkMode
+        ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-transparent'
+        : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-500 focus:ring-blue-500 focus:border-transparent'
+    }`;
   };
 
   return (
     <div
-      className={`absolute z-20 transition-all duration-300 transform ${isMobile
+      className={`absolute z-20 transition-all duration-300 transform ${
+        isMobile
           ? `bottom-0 left-0 right-0 rounded-t-3xl ${isExpanded ? 'h-[87vh]' : 'h-auto'}`
           : `top-4 ${isRTL() ? 'left-4' : 'right-4'}`
-        }`}
+      }`}
     >
       <div
-        className={`${isDarkMode ? 'border-white/10' : 'border-black/10'} border shadow-2xl ${isMobile
+        className={`${isDarkMode ? 'border-white/10' : 'border-black/10'} border shadow-2xl ${
+          isMobile
             ? 'rounded-t-3xl w-full flex flex-col h-full'
             : 'rounded-2xl w-72 max-w-[90vw] p-4'
-          }`}
+        }`}
         style={{
           backgroundColor: isDarkMode ? 'rgb(0 0 0 / 0.6)' : 'rgb(255 255 255 / 0.6)',
           backdropFilter: 'blur(24px)',
@@ -151,9 +160,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {selectedSeats.length} {t('seats')}
                 </span>
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>|</span>
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>
+                  |
+                </span>
                 <button
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onClearAll?.();
                   }}
@@ -223,8 +234,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
             {(errors.name || errors.email || errors.phone) && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-2 mt-2 animate-pulse">
                 <div className="flex items-center">
-                  <svg className="w-4 h-4 text-red-500 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-red-500 mr-1.5 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <span className="text-xs text-red-700 font-medium">
                     {errors.name?.message || errors.email?.message || errors.phone?.message}
@@ -261,7 +281,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} font-mono`}>
+                  <span
+                    className={`${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} font-mono`}
+                  >
                     {getSeatPrice(seat.category, categories)}
                   </span>
                   <button
@@ -305,7 +327,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...register('phone')}
                   type="tel"
                   className={`${getInputClasses(!!errors.phone)} ${isRTL() ? 'text-right' : ''}`}
-                  placeholder={t('phone')}
+                  placeholder={t('WhatsApp phone')}
                   dir={isRTL() ? 'rtl' : 'ltr'}
                 />
               </div>
@@ -322,8 +344,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
             {(errors.name || errors.email || errors.phone) && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-2 mt-2 animate-pulse">
                 <div className="flex items-center">
-                  <svg className="w-4 h-4 text-red-500 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-red-500 mr-1.5 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <span className="text-xs text-red-700 font-medium">
                     {errors.name?.message || errors.email?.message || errors.phone?.message}
