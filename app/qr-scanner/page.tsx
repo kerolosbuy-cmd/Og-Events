@@ -24,8 +24,7 @@ export default function QRScannerPage() {
     const [seats, setSeats] = useState<any[]>([]);
     const [loadingSeats, setLoadingSeats] = useState(true);
     const [checkedInExpanded, setCheckedInExpanded] = useState(true);
-    const [checkedOutExpanded, setCheckedOutExpanded] = useState(false);
-    const [notArrivedExpanded, setNotArrivedExpanded] = useState(false);
+    const [notCheckedInExpanded, setNotCheckedInExpanded] = useState(false);
 
     // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -72,10 +71,7 @@ export default function QRScannerPage() {
                     .select(`
                         id,
                         seat_number,
-                        zone,
-                        row,
                         check_in:"Check-in",
-                        check_in_time:"Check-in Time",
                         booking_id,
                         bookings (
                             name,
@@ -398,12 +394,10 @@ export default function QRScannerPage() {
 
     const renderAttendeesTab = () => {
         const checkedInSeats = seats.filter(seat => seat.check_in === true);
-        const checkedOutSeats = seats.filter(seat => seat.check_in === false);
-        const notArrivedSeats = seats.filter(seat => seat.check_in === null);
+        const notCheckedInSeats = seats.filter(seat => seat.check_in === false || seat.check_in === null);
         const totalSeats = seats.length;
         const checkedInCount = checkedInSeats.length;
-        const checkedOutCount = checkedOutSeats.length;
-        const notArrivedCount = notArrivedSeats.length;
+        const notCheckedInCount = notCheckedInSeats.length;
 
         return (
             <div className="flex flex-col h-full p-6">
@@ -436,7 +430,7 @@ export default function QRScannerPage() {
                     <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg p-2.5 shadow-lg">
                         <div className="text-center">
                             <div className="text-xl font-bold mb-0.5">
-                                {notArrivedCount}
+                                {notCheckedInCount}
                             </div>
                             <div className="text-xs opacity-90">
                                 Not Arrived
@@ -444,11 +438,11 @@ export default function QRScannerPage() {
                             <div className="mt-1.5 bg-white/20 rounded-full h-1.5 overflow-hidden">
                                 <div
                                     className="bg-white h-full transition-all duration-500 ease-out"
-                                    style={{ width: `${totalSeats > 0 ? (notArrivedCount / totalSeats) * 100 : 0}%` }}
+                                    style={{ width: `${totalSeats > 0 ? (notCheckedInCount / totalSeats) * 100 : 0}%` }}
                                 />
                             </div>
                             <div className="mt-1 text-xs opacity-75">
-                                {totalSeats > 0 ? Math.round((notArrivedCount / totalSeats) * 100) : 0}%
+                                {totalSeats > 0 ? Math.round((notCheckedInCount / totalSeats) * 100) : 0}%
                             </div>
                         </div>
                     </div>
@@ -521,13 +515,16 @@ export default function QRScannerPage() {
                                                             </div>
                                                             <div className="flex-shrink-0 ml-3 text-right">
                                                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                    {seat.zone} . {seat.row} . {seat.seat_number}
+                                                                    {seat.seat_number}
                                                                 </p>
-                                                                {seat.check_in_time && (
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                                        {new Date(seat.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                    </p>
-                                                                )}
+                                                                <div className="flex items-center justify-end gap-1 mt-0.5">
+                                                                    <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-0.5">
+                                                                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+                                                                    </div>
+                                                                    <span className="text-xs text-green-600 dark:text-green-400">
+                                                                        In
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -538,79 +535,10 @@ export default function QRScannerPage() {
                                 )}
                             </div>
 
-                            {/* Checked Out Section */}
+                            {/* Not Checked In Section */}
                             <div>
                                 <button
-                                    onClick={() => setCheckedOutExpanded(!checkedOutExpanded)}
-                                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full p-2">
-                                            <LogOut className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                                        </div>
-                                        <div className="text-left">
-                                            <h3 className="font-semibold text-gray-900 dark:text-white">
-                                                Checked Out
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {checkedOutCount} attendee{checkedOutCount !== 1 ? 's' : ''}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <svg
-                                        className={`h-5 w-5 text-gray-400 transition-transform ${checkedOutExpanded ? 'rotate-180' : ''}`}
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                {checkedOutExpanded && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/30">
-                                        {checkedOutSeats.length === 0 ? (
-                                            <div className="px-6 py-8 text-center text-gray-500 text-sm">
-                                                No attendees have checked out yet
-                                            </div>
-                                        ) : (
-                                            <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
-                                                {checkedOutSeats.map((seat) => (
-                                                    <div key={seat.id} className="px-4 py-3 hover:bg-white dark:hover:bg-gray-800/50 transition-colors">
-                                                        <div className="flex items-start justify-between">
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="font-medium text-gray-900 dark:text-white truncate">
-                                                                    {seat.bookings?.name || 'Unknown'}
-                                                                </p>
-                                                                {seat.bookings?.phone && (
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                                                        {seat.bookings.phone}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-shrink-0 ml-3 text-right">
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                    {seat.zone} . {seat.row} . {seat.seat_number}
-                                                                </p>
-                                                                {seat.check_in_time && (
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                                        {new Date(seat.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Not Arrived Section */}
-                            <div>
-                                <button
-                                    onClick={() => setNotArrivedExpanded(!notArrivedExpanded)}
+                                    onClick={() => setNotCheckedInExpanded(!notCheckedInExpanded)}
                                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
@@ -619,15 +547,15 @@ export default function QRScannerPage() {
                                         </div>
                                         <div className="text-left">
                                             <h3 className="font-semibold text-gray-900 dark:text-white">
-                                                Not Arrived
+                                                Not Checked In
                                             </h3>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {notArrivedCount} attendee{notArrivedCount !== 1 ? 's' : ''}
+                                                {notCheckedInSeats.length} attendee{notCheckedInSeats.length !== 1 ? 's' : ''}
                                             </p>
                                         </div>
                                     </div>
                                     <svg
-                                        className={`h-5 w-5 text-gray-400 transition-transform ${notArrivedExpanded ? 'rotate-180' : ''}`}
+                                        className={`h-5 w-5 text-gray-400 transition-transform ${notCheckedInExpanded ? 'rotate-180' : ''}`}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -636,15 +564,15 @@ export default function QRScannerPage() {
                                     </svg>
                                 </button>
 
-                                {notArrivedExpanded && (
+                                {notCheckedInExpanded && (
                                     <div className="bg-gray-50 dark:bg-gray-900/30">
-                                        {notArrivedSeats.length === 0 ? (
+                                        {notCheckedInSeats.length === 0 ? (
                                             <div className="px-6 py-8 text-center text-gray-500 text-sm">
-                                                All attendees have arrived!
+                                                All attendees are checked in!
                                             </div>
                                         ) : (
                                             <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
-                                                {notArrivedSeats.map((seat) => (
+                                                {notCheckedInSeats.map((seat) => (
                                                     <div key={seat.id} className="px-4 py-3 hover:bg-white dark:hover:bg-gray-800/50 transition-colors">
                                                         <div className="flex items-start justify-between">
                                                             <div className="flex-1 min-w-0">
@@ -659,14 +587,14 @@ export default function QRScannerPage() {
                                                             </div>
                                                             <div className="flex-shrink-0 ml-3 text-right">
                                                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                    {seat.zone} . {seat.row} . {seat.seat_number}
+                                                                    {seat.seat_number}
                                                                 </p>
                                                                 <div className="flex items-center justify-end gap-1 mt-0.5">
                                                                     <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-0.5">
                                                                         <AlertCircle className="h-3 w-3 text-gray-600 dark:text-gray-400" />
                                                                     </div>
                                                                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        Not Arrived
+                                                                        Out
                                                                     </span>
                                                                 </div>
                                                             </div>
