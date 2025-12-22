@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShoppingBag, AlertCircle, CheckCircle, Hash, Calendar, Clock, User, Mail, Phone, DollarSign, MapPin, X, Loader2, Download, FileText } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, AlertCircle, CheckCircle, Hash, Calendar, Clock, User, Mail, Phone, DollarSign, MapPin, Loader2, Download, FileText } from 'lucide-react';
 import { useLanguageContext } from '@/contexts/LanguageContext';
 import { getOrderIds, removeOrderId } from '@/lib/orderIdsManager';
 import { Badge } from '@/components/ui/badge';
@@ -42,38 +42,6 @@ export default function OrdersPage() {
 
   const goBack = () => {
     router.push('/');
-  };
-
-  const handleCancelOrder = async (bookingId: string) => {
-    setProcessingId(bookingId);
-    setError(null);
-
-    try {
-      // Call cancel order API
-      const response = await fetch('/api/cancel-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-      });
-
-      if (response.ok) {
-        // Remove order ID from localStorage
-        removeOrderId(bookingId);
-
-        // Update bookings state to remove cancelled order
-        setBookings(prevBookings => prevBookings.filter(booking => booking.id !== bookingId));
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to cancel order');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-      console.error('Error cancelling order:', err);
-    } finally {
-      setProcessingId(null);
-    }
   };
 
   const handleDownloadTickets = async (bookingId: string) => {
@@ -397,7 +365,7 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex gap-2 justify-end">
-                          {booking.status === 'approved' ? (
+                          {booking.status === 'approved' && (
                             <>
                               <Button
                                 onClick={() => handleDownloadTickets(booking.id)}
@@ -426,19 +394,6 @@ export default function OrdersPage() {
                                 {processingId === booking.id ? 'PDFs...' : 'PDFs'}
                               </Button>
                             </>
-                          ) : (
-                            <Button
-                              onClick={() => handleCancelOrder(booking.id)}
-                              disabled={processingId === booking.id}
-                              className="h-8 px-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-sm transition-all duration-200"
-                              size="sm"
-                            >
-                              {processingId === booking.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <X className="h-4 w-4" />
-                              )}
-                            </Button>
                           )}
                         </div>
                       </td>

@@ -50,7 +50,13 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/payment') &&
+    !request.nextUrl.pathname.startsWith('/api/payment') &&
     !request.nextUrl.pathname.startsWith('/booking-confirmation') &&
+    !request.nextUrl.pathname.startsWith('/orders') &&
+    !request.nextUrl.pathname.startsWith('/api/validate-order-ids') &&
+    !request.nextUrl.pathname.startsWith('/api/generate-tickets-pdf') &&
+    !request.nextUrl.pathname.startsWith('/api/image-proxy') &&
+    !request.nextUrl.pathname.startsWith('/api/generate-separate-tickets-pdf') &&
     request.nextUrl.pathname !== '/'
   ) {
     // no user, potentially respond by redirecting the user to the login page
