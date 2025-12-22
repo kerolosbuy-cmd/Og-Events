@@ -1,6 +1,3 @@
-
 {
-  "buildCommand": "npm run build:turbo",
-  "framework": "nextjs",
-  "installCommand": "npm install"
+  "framework": "nextjs"
 }
