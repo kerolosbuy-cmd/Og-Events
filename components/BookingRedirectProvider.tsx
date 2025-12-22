@@ -1,4 +1,4 @@
-use client';
+'use client';
 
 import { usePendingBookingRedirect } from '@/lib/booking-redirect';
 import { useEffect } from 'react';
