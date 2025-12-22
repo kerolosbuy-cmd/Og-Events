@@ -2,6 +2,7 @@
 
 import { SeatMap } from '@/components/seat-map';
 import { usePendingBookingRedirect } from '@/lib/booking-redirect';
+import { useEffect } from 'react';
 
 export default function Home() {
   // Check for pending bookings and redirect if needed

@@ -148,6 +148,13 @@ export default function OrdersPage() {
             Rejected
           </Badge>
         );
+      case 'timeout':
+        return (
+          <Badge variant="destructive" className="shadow-sm">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Timeout
+          </Badge>
+        );
       default:
         return (
           <Badge variant="outline" className="shadow-sm">

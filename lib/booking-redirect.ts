@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Storage key for saving the booking information
@@ -110,22 +110,30 @@ export const clearPendingBooking = (): void => {
 // Hook to handle redirect to payment page if there's a pending booking
 export const usePendingBookingRedirect = (): void => {
   const router = useRouter();
+  const isRedirecting = useRef(false);
 
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return;
-
+    
     // Only redirect if on the home page
     const currentPath = window.location.pathname;
     if (currentPath !== '/') {
       return;
     }
+    
+    // Prevent multiple redirects
+    if (isRedirecting.current) return;
 
     // Check for pending booking
     const pendingBooking = getPendingBooking();
     if (pendingBooking && pendingBooking.bookingId) {
-      // Redirect to payment page
-      router.push(`/payment/${pendingBooking.bookingId}`);
+      // Mark as redirecting to prevent multiple redirects
+      isRedirecting.current = true;
+      
+      // Use window.location.href for a more reliable and immediate redirect
+      // This bypasses Next.js router which can be slow
+      window.location.href = `/payment/${pendingBooking.bookingId}`;
     }
   }, [router]);
 };
