@@ -18,12 +18,39 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
   const [isCancelling, setIsCancelling] = useState(false);
   
   const handleCancelBooking = async () => {
-    if (window.confirm(t('cancelBookingConfirm'))) {
-      setIsCancelling(true);
-      try {
-        // Import Supabase
-        const { supabase } = await import('@/lib/supabase');
+    setIsCancelling(true);
+    try {
+      // Import Supabase
+      const { supabase } = await import('@/lib/supabase');
 
+      // Always fetch the current booking status from database (not from props)
+      const { data: bookingData, error: fetchError } = await supabase
+        .from('bookings')
+        .select('status')
+        .eq('id', bookingId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching booking status:', fetchError);
+        setIsCancelling(false);
+        alert(t('cancelBookingFailed'));
+        return;
+      }
+
+      console.log('Current booking status:', bookingData?.status);
+
+      // Check if booking status is pending
+      if (bookingData?.status !== 'pending') {
+        // Booking is already paid, show alert and remove from localStorage
+        setIsCancelling(false);
+        alert(t('bookingAlreadyPaid') || 'This booking is already paid and cannot be cancelled.');
+        localStorage.removeItem('pendingBooking');
+        router.push('/');
+        return;
+      }
+
+      // Confirm cancellation only if status is pending
+      if (window.confirm(t('cancelBookingConfirm'))) {
         // Delete the booking from the database
         const { error } = await supabase
           .from('bookings')
@@ -40,12 +67,12 @@ export default function BookingDetailsCard({ bookingId, bookingDetails, isDarkMo
           // Redirect to home page
           router.push('/');
         }
-      } catch (err) {
-        console.error('Error cancelling booking:', err);
-        alert(t('cancelBookingError'));
-      } finally {
-        setIsCancelling(false);
       }
+    } catch (err) {
+      console.error('Error cancelling booking:', err);
+      alert(t('cancelBookingError'));
+    } finally {
+      setIsCancelling(false);
     }
   };
   

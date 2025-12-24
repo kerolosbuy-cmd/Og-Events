@@ -12,6 +12,7 @@ import Zone from './Zone';
 import { calculateZoneBounds } from './utils/zoneHelpers';
 import BookingForm from './BookingForm';
 import { useSeatMap, useSeatSelection, useUIState } from './hooks';
+import { getOrderIds } from '@/lib/orderIdsManager';
 import { LegendItem, GuestForm } from './types';
 import Notification from '../booking/Notifications';
 import { useLanguageContext } from '@/contexts/LanguageContext';
@@ -46,6 +47,7 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
   // State to track if the legend should be collapsed on mobile
   const [legendCollapsed, setLegendCollapsed] = React.useState(false);
   const [touchDetected, setTouchDetected] = React.useState(false);
+  const [hasOrders, setHasOrders] = React.useState(false);
 
   // Notification state
   const [notification, setNotification] = useState<{
@@ -122,6 +124,29 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  // Check if user has orders
+  React.useEffect(() => {
+    const checkOrders = () => {
+      const orderIds = getOrderIds();
+      setHasOrders(orderIds.length > 0);
+    };
+
+    checkOrders();
+
+    // Listen for storage changes to update the indicator
+    const handleStorageChange = () => {
+      checkOrders();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('orderIdsChanged', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('orderIdsChanged', handleStorageChange);
+    };
   }, []);
 
   // Handle first touch on mobile to collapse the legend
@@ -290,9 +315,9 @@ const SeatMapFloat: React.FC<SeatMapFloatProps> = ({ planId }) => {
             isCollapsed={legendCollapsed}
           />
         </div>
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 pointer-events-none ${isMobile ? 'absolute right-4 top-4' : ''}`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 pointer-events-none ${isMobile ? (isRTL() ? 'absolute left-4 top-4' : 'absolute right-4 top-4') : ''}`}>
           <div className="pointer-events-auto"><FullMapButton isDarkMode={isDarkMode} onClick={handleFitToViewer} /></div>
-          <div className="pointer-events-auto"><OrdersButton isDarkMode={isDarkMode} /></div>
+          <div className="pointer-events-auto"><OrdersButton isDarkMode={isDarkMode} hasOrders={hasOrders} /></div>
           <div className="pointer-events-auto"><LanguageToggle
             isDarkMode={isDarkMode}
             currentLanguage={language}

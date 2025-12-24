@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import { updateBookingWithPayment } from '@/components/seat-map/services';
+import { useDarkMode } from '../[bookingId]/hooks/useDarkMode';
 
 // ... (handleApprove function remains the same)
 const handleApprove = async (bookingId: string) => {
@@ -32,6 +33,7 @@ const handleApprove = async (bookingId: string) => {
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { isDarkMode } = useDarkMode();
   const [isVerifying, setIsVerifying] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +118,10 @@ function PaymentSuccessContent() {
           });
 
           if (!response.ok) {
-            throw new Error('Failed to validate signature');
+            const errorText = await response.text();
+            console.error('Validation API error response:', errorText);
+            console.error('Response status:', response.status, response.statusText);
+            throw new Error(`Failed to validate signature: ${response.status} ${response.statusText}`);
           }
 
           const data = await response.json();
@@ -131,9 +136,10 @@ function PaymentSuccessContent() {
           }
 
           console.log('Payment signature validated successfully');
-        } catch (e) {
+        } catch (e: any) {
           console.error('Error validating signature:', e);
-          setError('Error validating payment signature');
+          const errorMessage = e.message || 'Unknown error occurred';
+          setError(`Error validating payment signature: ${errorMessage}`);
           setIsVerifying(false);
           return;
         }
@@ -189,22 +195,22 @@ function PaymentSuccessContent() {
   };
 
   return (
-    <div className={`min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 ${userLanguage === 'ar' ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col justify-center py-12 sm:px-6 lg:px-8 ${userLanguage === 'ar' ? 'rtl' : 'ltr'}`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} py-8 px-4 shadow sm:rounded-lg sm:px-10`}>
           <div className="flex flex-col items-center">
             {isVerifying ? (
               <>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.verifyingPayment}</h2>
-                <p className="text-gray-600">{t.pleaseWait}</p>
+                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>{t.verifyingPayment}</h2>
+                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{t.pleaseWait}</p>
               </>
             ) : isSuccess ? (
               <>
                 <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.paymentSuccessful}</h2>
-                <p className="text-gray-600 mb-6">{t.bookingConfirmed}</p>
-                <p className="text-sm text-gray-500 mb-6">{t.orderId}: {searchParams.get('orderId')}</p>
+                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>{t.paymentSuccessful}</h2>
+                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6>{t.bookingConfirmed}</p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-6`}>{t.orderId}: {searchParams.get('orderId')}</p>
                 <button
                   onClick={handleContinue}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
@@ -214,14 +220,14 @@ function PaymentSuccessContent() {
               </>
             ) : (
               <>
-                <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <div className={`h-16 w-16 ${isDarkMode ? 'bg-red-900/30' : 'bg-red-100'} rounded-full flex items-center justify-center mb-4`}>
                   <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.paymentVerificationFailed}</h2>
-                <p className="text-gray-600 mb-2">{error || t.couldNotVerify}</p>
-                <p className="text-sm text-gray-500 mb-6">{t.orderId}: {searchParams.get('orderId')}</p>
+                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>{t.paymentVerificationFailed}</h2>
+                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-2>{error || t.couldNotVerify}</p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-6`}>{t.orderId}: {searchParams.get('orderId')}</p>
                 <button
                   onClick={handleContinue}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"

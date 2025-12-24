@@ -42,6 +42,7 @@ export default function QRScannerPage() {
     const [error, setError] = useState<string>('');
     const [checkInMessage, setCheckInMessage] = useState<string>('');
     const [checkInSuccess, setCheckInSuccess] = useState<boolean>(false);
+    const [hasContinued, setHasContinued] = useState<boolean>(false);
 
     // Attendees tab state
     const [seats, setSeats] = useState<any[]>([]);
@@ -76,6 +77,9 @@ export default function QRScannerPage() {
             initScanner();
         } else {
             // Stop scanner when not on scanning tabs
+            if (qrScannerRef.current) {
+                qrScannerRef.current.stop();
+            }
             setScanning(false);
         }
 
@@ -85,6 +89,31 @@ export default function QRScannerPage() {
                 qrScannerRef.current.destroy();
                 qrScannerRef.current = null;
             }
+        };
+    }, [activeTab]);
+
+    // Handle window visibility changes
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Stop scanner when window is hidden
+                if (qrScannerRef.current) {
+                    qrScannerRef.current.stop();
+                }
+                setScanning(false);
+            } else {
+                // Resume scanner when window becomes visible and on scanning tab
+                if ((activeTab === 'checkin' || activeTab === 'checkout') && qrScannerRef.current) {
+                    qrScannerRef.current.start();
+                    setScanning(true);
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [activeTab]);
 
@@ -195,9 +224,8 @@ export default function QRScannerPage() {
             const qrScanner = new QrScanner(
                 videoRef.current,
                 async (result) => {
+                    // Set result to show notification
                     setResult(result.data);
-                    qrScanner.stop();
-                    setScanning(false);
 
                     // If on checkin tab, call the check_in function
                     if (activeTab === 'checkin') {
@@ -211,14 +239,27 @@ export default function QRScannerPage() {
                                 console.error('Error checking in:', error);
                                 setCheckInMessage(error.message || 'Failed to check in. Please try again.');
                                 setCheckInSuccess(false);
+                                // Stop scanner on error
+                                qrScanner.stop();
+                                setScanning(false);
                             } else {
                                 setCheckInMessage('Successfully checked in!');
                                 setCheckInSuccess(true);
+                                // Keep scanner running for success
+                                // Auto-close success notification after 1300ms
+                                setTimeout(() => {
+                                    setResult('');
+                                    setCheckInMessage('');
+                                    setCheckInSuccess(false);
+                                }, 1300);
                             }
                         } catch (err) {
                             console.error('Error calling check_in function:', err);
                             setCheckInMessage('An unexpected error occurred. Please try again.');
                             setCheckInSuccess(false);
+                            // Stop scanner on error
+                            qrScanner.stop();
+                            setScanning(false);
                         }
                     } else if (activeTab === 'checkout') {
                         try {
@@ -231,14 +272,27 @@ export default function QRScannerPage() {
                                 console.error('Error checking out:', error);
                                 setCheckInMessage(error.message || 'Failed to check out. Please try again.');
                                 setCheckInSuccess(false);
+                                // Stop scanner on error
+                                qrScanner.stop();
+                                setScanning(false);
                             } else {
                                 setCheckInMessage('Successfully checked out!');
                                 setCheckInSuccess(true);
+                                // Keep scanner running for success
+                                // Auto-close success notification after 1300ms
+                                setTimeout(() => {
+                                    setResult('');
+                                    setCheckInMessage('');
+                                    setCheckInSuccess(false);
+                                }, 1300);
                             }
                         } catch (err) {
                             console.error('Error calling check_out function:', err);
                             setCheckInMessage('An unexpected error occurred. Please try again.');
                             setCheckInSuccess(false);
+                            // Stop scanner on error
+                            qrScanner.stop();
+                            setScanning(false);
                         }
                     }
                 },
@@ -296,6 +350,25 @@ export default function QRScannerPage() {
             // Switch back to the original tab
             setActiveTab(currentTab);
         }, 100);
+    };
+
+    const resetScanner = async () => {
+        setResult('');
+        setCheckInMessage('');
+        setCheckInSuccess(false);
+        setHasContinued(false);
+
+        // Restart the scanner if it exists
+        if (qrScannerRef.current) {
+            try {
+                await qrScannerRef.current.start();
+                setScanning(true);
+            } catch (err) {
+                console.error('Error restarting scanner:', err);
+                setError('Failed to restart scanner. Please try again.');
+                setScanning(false);
+            }
+        }
     };
 
     const handleFlipCamera = async () => {
@@ -410,50 +483,41 @@ export default function QRScannerPage() {
                         </div>
                     )}
 
-                    {/* Result Display */}
+                    {/* Result Display - Toast/Notification */}
                     {result && (
-                        <div className="flex-1 flex items-center justify-center px-4 pb-6">
-                            <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full">
-                                {/* Success Animation */}
-                                <div className="relative mb-6">
-                                    <div className={`absolute inset-0 bg-${getTabColor()}-100 dark:bg-${getTabColor()}-900/30 rounded-full animate-ping opacity-20`} />
-                                    <div className={`relative bg-${getTabColor()}-100 dark:bg-${getTabColor()}-900/30 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center`}>
-                                        <Check className={`h-12 w-12 text-${getTabColor()}-500 dark:text-${getTabColor()}-400`} />
+                        <div className="absolute top-4 left-4 right-4 z-50">
+                            <div className={`bg-white dark:bg-gray-800 rounded-xl p-3 shadow-2xl max-w-sm mx-auto transform transition-all animate-in fade-in slide-in-from-top-4 duration-300 ${checkInSuccess ? 'border-2 border-green-500' : 'border-2 border-red-500'}`}>
+                                <div className="flex items-center gap-3">
+                                    {/* Success/Error Icon */}
+                                    <div className={`relative flex-shrink-0 ${checkInSuccess ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'} rounded-full p-2 w-10 h-10 flex items-center justify-center`}>
+                                        {checkInSuccess ? (
+                                            <Check className="h-6 w-6 text-green-500 dark:text-green-400" />
+                                        ) : (
+                                            <AlertCircle className="h-6 w-6 text-red-500 dark:text-red-400" />
+                                        )}
                                     </div>
+
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className={`text-sm font-bold ${checkInSuccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} mb-1`}>
+                                            {checkInSuccess ? `${getTabTitle()} Successful!` : `${getTabTitle()} Failed`}
+                                        </h3>
+                                        {checkInMessage && (
+                                            <p className={`text-xs ${checkInSuccess ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'} truncate`}>
+                                                {checkInMessage}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Action Button - Only show for errors */}
+                                    {!checkInSuccess && (
+                                        <button
+                                            onClick={handleScanAgain}
+                                            className="flex-shrink-0 bg-red-500 hover:bg-red-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-md"
+                                        >
+                                            Continue
+                                        </button>
+                                    )}
                                 </div>
-
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                                    {checkInSuccess ? 'Check-in Successful!' : 'Check-in Failed'}
-                                </h3>
-
-                                {/* Check-in Message */}
-                                {checkInMessage && (
-                                    <div className={`rounded-xl p-4 mb-6 border ${checkInSuccess ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}`}>
-                                        <p className={`text-sm ${checkInSuccess ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                                            {checkInMessage}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Result Content - Only show seat ID if check-in was successful */}
-                                {checkInSuccess && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-6 border border-gray-200 dark:border-gray-700">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
-                                            Seat ID:
-                                        </p>
-                                        <p className="text-gray-900 dark:text-white break-all font-mono text-sm">
-                                            {result}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Action Button */}
-                                <button
-                                    onClick={handleScanAgain}
-                                    className={`w-full bg-gradient-to-r from-${getTabColor()}-500 to-${getTabColor()}-600 hover:from-${getTabColor()}-600 hover:to-${getTabColor()}-700 text-white font-medium py-4 px-6 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg`}
-                                >
-                                    Continue
-                                </button>
                             </div>
                         </div>
                     )}
