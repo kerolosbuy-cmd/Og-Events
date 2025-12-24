@@ -81,9 +81,9 @@ export const usePaymentSubmission = (bookingId: string) => {
         // Mark the payment as uploaded instead of clearing
         markPaymentUploaded();
         setSuccess(true);
-        // Redirect to a confirmation page after 3 seconds
+        // Redirect to orders page after 3 seconds
         setTimeout(() => {
-          router.push('/booking-confirmation');
+          router.push('/orders');
         }, 3000);
       } else {
         setError(data?.message || 'Failed to upload payment proof');

@@ -131,28 +131,28 @@ export default function OrdersPage() {
         return (
           <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 shadow-sm">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Approved
+            {t('approved')}
           </Badge>
         );
       case 'pending':
         return (
           <Badge variant="secondary" className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 dark:from-yellow-900/30 dark:to-amber-900/30 dark:text-yellow-300 shadow-sm">
             <Clock className="h-3 w-3 mr-1" />
-            Pending
+            {t('pending')}
           </Badge>
         );
       case 'rejected':
         return (
           <Badge variant="destructive" className="shadow-sm">
             <AlertCircle className="h-3 w-3 mr-1" />
-            Rejected
+            {t('rejected')}
           </Badge>
         );
       case 'timeout':
         return (
           <Badge variant="destructive" className="shadow-sm">
             <AlertCircle className="h-3 w-3 mr-1" />
-            Timeout
+            {t('timeout')}
           </Badge>
         );
       default:
@@ -227,7 +227,7 @@ export default function OrdersPage() {
             <div className="absolute inset-0 rounded-full bg-indigo-100 dark:bg-indigo-900/30"></div>
             <div className="absolute inset-0 rounded-full border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 animate-spin"></div>
           </div>
-          <p className="text-slate-600 dark:text-slate-300 font-medium">{t('loading') || 'Loading your orders...'}</p>
+          <p className="text-slate-600 dark:text-slate-300 font-medium">{t('loadingYourOrders')}</p>
         </div>
       </div>
     );
@@ -243,15 +243,15 @@ export default function OrdersPage() {
               <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                 <ShoppingBag className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('myOrders') || 'My Orders'}</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('myOrders')}</h1>
             </div>
             <p className="text-slate-600 dark:text-slate-300 ml-11 max-w-2xl">
-              {t('myOrdersDescription') || 'View and manage your ticket orders'}
+              {t('myOrdersDescription')}
             </p>
           </div>
           <Button variant="outline" onClick={goBack} className="rounded-full px-6 shadow-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('backToHome') || 'Back to Home'}
+            {t('backToHome')}
           </Button>
         </div>
 
@@ -262,7 +262,7 @@ export default function OrdersPage() {
               <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="font-medium text-red-800 dark:text-red-200">Error loading orders</p>
+              <p className="font-medium text-red-800 dark:text-red-200">{t('errorLoadingOrders')}</p>
               <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
             </div>
           </div>
@@ -291,12 +291,12 @@ export default function OrdersPage() {
               <table className="min-w-full">
                 <thead className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-b border-indigo-100 dark:border-indigo-800/30">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">ID & Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">Customer Info</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">Seats</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">Actions</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('idAndDate')}</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('customerInfo')}</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('seats')}</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('amount')}</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('status')}</th>
+                    <th className="px-6 py-3 text-end text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-200">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -350,12 +350,12 @@ export default function OrdersPage() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                            <span className="text-sm font-medium">Seats ({booking.seats?.length || 0})</span>
+                            <span className="text-sm font-medium">{t('seats')} ({booking.seats?.length || 0})</span>
                           </div>
                           <ul className="ml-6 space-y-1">
                             {booking.seats?.map((seat, index) => (
                               <li key={index} className="text-sm text-slate-600 dark:text-slate-300">
-                                {seat.rows.zones.name} - Row {seat.rows.row_number} - Seat {seat.seat_number}
+                                {seat.rows.zones.name} • {seat.rows.row_number} • {seat.seat_number}
                               </li>
                             ))}
                           </ul>
@@ -364,7 +364,7 @@ export default function OrdersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-bold text-green-600 dark:text-green-400">{booking.amount}</span>
-                          <span className="text-sm text-green-600 dark:text-green-400">EGP</span>
+                          <span className="text-sm text-green-600 dark:text-green-400">{t('currency')}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -374,19 +374,6 @@ export default function OrdersPage() {
                         <div className="flex gap-2 justify-end">
                           {booking.status === 'approved' && (
                             <>
-                              <Button
-                                onClick={() => handleDownloadTickets(booking.id)}
-                                disabled={processingId === booking.id}
-                                className="h-8 px-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-sm transition-all duration-200"
-                                size="sm"
-                              >
-                                {processingId === booking.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Download className="h-4 w-4 mr-1" />
-                                )}
-                                {processingId === booking.id ? 'HTML...' : 'HTML'}
-                              </Button>
                               <Button
                                 onClick={() => handleDownloadSeparateTickets(booking.id)}
                                 disabled={processingId === booking.id}

@@ -35,6 +35,43 @@ function PaymentSuccessContent() {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userLanguage, setUserLanguage] = useState<'en' | 'ar'>('en');
+
+  useEffect(() => {
+    // Get language from localStorage
+    const lang = localStorage.getItem('user-language');
+    if (lang === 'ar') {
+      setUserLanguage('ar');
+    }
+  }, []);
+
+  // Language translations
+  const translations = {
+    en: {
+      verifyingPayment: 'Verifying Payment',
+      pleaseWait: 'Please wait while we verify your payment...',
+      paymentSuccessful: 'Payment Successful',
+      bookingConfirmed: 'Your payment has been processed successfully. Your booking is now confirmed.',
+      orderId: 'Order ID',
+      myOrders: 'My Orders',
+      paymentVerificationFailed: 'Payment Verification Failed',
+      couldNotVerify: "We couldn't verify your payment.",
+      returnToHome: 'Return to Home'
+    },
+    ar: {
+      verifyingPayment: 'جاري التحقق من الدفع',
+      pleaseWait: 'يرجى الانتظار بينما نتحقق من دفعتك...',
+      paymentSuccessful: 'تم الدفع بنجاح',
+      bookingConfirmed: 'تمت معالجة دفعتك بنجاح. تم تأكيد حجزك الآن.',
+      orderId: 'رقم الطلب',
+      myOrders: 'طلباتي',
+      paymentVerificationFailed: 'فشل التحقق من الدفع',
+      couldNotVerify: 'لم نتمكن من التحقق من دفعتك.',
+      returnToHome: 'العودة إلى الرئيسية'
+    }
+  };
+
+  const t = translations[userLanguage];
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -148,31 +185,31 @@ function PaymentSuccessContent() {
   const handleContinue = () => {
     // Clear any pending booking
     localStorage.removeItem('pendingBooking');
-    router.push('/');
+    router.push('/orders');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className={`min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 ${userLanguage === 'ar' ? 'rtl' : 'ltr'}`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <div className="flex flex-col items-center">
             {isVerifying ? (
               <>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Verifying Payment</h2>
-                <p className="text-gray-600">Please wait while we verify your payment...</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.verifyingPayment}</h2>
+                <p className="text-gray-600">{t.pleaseWait}</p>
               </>
             ) : isSuccess ? (
               <>
                 <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Payment Successful</h2>
-                <p className="text-gray-600 mb-6">Your payment has been processed successfully. Your booking is now confirmed.</p>
-                <p className="text-sm text-gray-500 mb-6">Order ID: {searchParams.get('orderId')}</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.paymentSuccessful}</h2>
+                <p className="text-gray-600 mb-6">{t.bookingConfirmed}</p>
+                <p className="text-sm text-gray-500 mb-6">{t.orderId}: {searchParams.get('orderId')}</p>
                 <button
                   onClick={handleContinue}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
-                  Continue
+                  {t.myOrders}
                 </button>
               </>
             ) : (
@@ -182,14 +219,14 @@ function PaymentSuccessContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Payment Verification Failed</h2>
-                <p className="text-gray-600 mb-2">{error || 'We couldn&#39;t verify your payment.'}</p>
-                <p className="text-sm text-gray-500 mb-6">Order ID: {searchParams.get('orderId')}</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t.paymentVerificationFailed}</h2>
+                <p className="text-gray-600 mb-2">{error || t.couldNotVerify}</p>
+                <p className="text-sm text-gray-500 mb-6">{t.orderId}: {searchParams.get('orderId')}</p>
                 <button
                   onClick={handleContinue}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
-                  Return to Home
+                  {t.returnToHome}
                 </button>
               </>
             )}
