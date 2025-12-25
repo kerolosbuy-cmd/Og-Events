@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 interface Category {
   id: string;
@@ -57,12 +58,17 @@ export function CategoryVisibility({ categories = [], onSaveComplete }: Category
 
         setCategoriesData(Object.values(categoriesFromSeats));
       } catch (error: any) {
-        toast.error(`Failed to load categories: ${error.message}`);
+        console.error('Failed to load categories:', error);
+        setCategoriesData([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     if (categories.length === 0) {
       fetchCategories();
+    } else {
+      setLoading(false);
     }
   }, [categories.length]);
 
@@ -80,10 +86,8 @@ export function CategoryVisibility({ categories = [], onSaveComplete }: Category
         }, {} as Record<string, boolean>);
 
         setVisibleCategories(mergedSettings);
-        setLoading(false);
       } catch (error: any) {
-        toast.error(`Failed to load category settings: ${error.message}`);
-        setLoading(false);
+        console.error('Failed to load category settings:', error);
       }
     };
 
@@ -128,62 +132,77 @@ export function CategoryVisibility({ categories = [], onSaveComplete }: Category
     }
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+  // Don't render anything if loading or no data
+  if (loading || categoriesData.length === 0) {
+    return null;
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-lg border border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden group">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
+      <CardHeader className="relative z-10">
         <div className="flex justify-between items-center">
-          <CardTitle>Category Visibility</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Eye className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Category Visibility</CardTitle>
+              <CardDescription className="mt-1">
+                Control which ticket categories are visible to customers
+              </CardDescription>
+            </div>
+          </div>
           <div className="flex space-x-2">
-            <button
+            <Button
               onClick={() => toggleAll(true)}
-              className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+              size="sm"
+              variant="outline"
+              className="text-xs border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
             >
               Show All
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => toggleAll(false)}
-              className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              size="sm"
+              variant="outline"
+              className="text-xs border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-800"
             >
               Hide All
-            </button>
+            </Button>
           </div>
         </div>
-        <CardDescription>
-          Toggle categories on/off to control which seats are displayed on the main page seat map
-        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         <div className="space-y-3">
           {categoriesData.map((category) => (
-            <div key={category.id} className="flex items-center justify-between">
+            <div
+              key={category.id}
+              className="flex items-center justify-between p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-border/30"
+            >
               <div className="flex items-center space-x-3">
                 <div
-                  className="w-4 h-4 rounded"
+                  className="w-5 h-5 rounded-md shadow-sm border border-border/50"
                   style={{ backgroundColor: category.color }}
                 />
                 <span className="font-medium">{category.name}</span>
                 {category.count !== undefined && (
-                  <Badge variant="outline" className="ml-2">
+                  <Badge variant="outline" className="ml-2 bg-background/50">
                     {category.count} seats
                   </Badge>
                 )}
               </div>
-              <Switch
-                checked={visibleCategories[category.id]}
-                onCheckedChange={() => handleToggle(category.id)}
-              />
+              <div className="flex items-center gap-2">
+                {visibleCategories[category.id] ? (
+                  <Eye className="h-4 w-4 text-green-600" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                )}
+                <Switch
+                  checked={visibleCategories[category.id]}
+                  onCheckedChange={() => handleToggle(category.id)}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -192,6 +211,7 @@ export function CategoryVisibility({ categories = [], onSaveComplete }: Category
           <Button
             onClick={handleSave}
             disabled={!hasChanges || saving}
+            className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all duration-200"
           >
             {saving ? "Saving..." : "Save Settings"}
           </Button>
