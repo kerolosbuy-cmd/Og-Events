@@ -42,12 +42,13 @@ export interface CustomTextElement {
 }
 
 export interface TicketElements {
-  backgroundImage: ElementPosition & { visible: boolean };
+  backgroundImage: ElementPosition & { visible: boolean; url?: string };
   qrCode: ElementPosition & {
     visible: boolean;
     backgroundColor: string;
     foregroundColor: string;
     transparentBackground: boolean;
+    url?: string;
   };
   customTexts: CustomTextElement[];
 }

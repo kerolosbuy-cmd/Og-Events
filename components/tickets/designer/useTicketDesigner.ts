@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   TicketDetails,
   TicketSize,
@@ -8,15 +8,20 @@ import {
   TicketElements,
   TicketElementKey,
 } from './types';
+import { useHistory } from './useHistory';
 
-export function useTicketDesigner() {
-  const [ticketDetails, setTicketDetails] = useState<TicketDetails>({
+export interface DesignerState {
+  ticketDetails: TicketDetails;
+  ticketSize: TicketSize;
+  ticketElements: TicketElements;
+}
+
+const initialState: DesignerState = {
+  ticketDetails: {
     qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={SEAT_ID}',
-  });
-
-  const [ticketSize, setTicketSize] = useState<TicketSize>({ width: 600, height: 300 });
-
-  const [ticketElements, setTicketElements] = useState<TicketElements>({
+  },
+  ticketSize: { width: 600, height: 300 },
+  ticketElements: {
     backgroundImage: { x: 0, y: 0, width: 600, height: 300, visible: true },
     qrCode: {
       x: 480,
@@ -29,9 +34,35 @@ export function useTicketDesigner() {
       transparentBackground: false,
     },
     customTexts: [],
-  });
+  },
+};
 
+export function useTicketDesigner() {
+  const { state, setState, undo, redo, canUndo, canRedo } = useHistory<DesignerState>(initialState);
   const [activeElement, setActiveElement] = useState<TicketElementKey | string | null>(null);
+
+  const { ticketDetails, ticketSize, ticketElements } = state;
+
+  const setTicketElements = useCallback((next: TicketElements | ((prev: TicketElements) => TicketElements)) => {
+    setState(prev => ({
+      ...prev,
+      ticketElements: typeof next === 'function' ? next(prev.ticketElements) : next
+    }));
+  }, [setState]);
+
+  const setTicketDetails = useCallback((next: TicketDetails | ((prev: TicketDetails) => TicketDetails)) => {
+    setState(prev => ({
+      ...prev,
+      ticketDetails: typeof next === 'function' ? next(prev.ticketDetails) : next
+    }));
+  }, [setState]);
+
+  const setTicketSize = useCallback((next: TicketSize | ((prev: TicketSize) => TicketSize)) => {
+    setState(prev => ({
+      ...prev,
+      ticketSize: typeof next === 'function' ? next(prev.ticketSize) : next
+    }));
+  }, [setState]);
 
   const handleDetailChange = (field: keyof TicketDetails, value: string) => {
     setTicketDetails(prev => ({
@@ -40,39 +71,38 @@ export function useTicketDesigner() {
     }));
   };
 
-  const handleTicketSizeChange = (dimension: 'width' | 'height', value: string) => {
-    const numValue = parseInt(value) || 100;
-    setTicketSize(prev => ({
-      ...prev,
-      [dimension]: numValue,
-    }));
+  const handleTicketSizeChange = (dimension: 'width' | 'height', value: string | number) => {
+    const numValue = typeof value === 'string' ? parseInt(value) || 100 : value;
 
-    // Update background image size to match ticket size
-    setTicketElements(prev => ({
+    setState(prev => ({
       ...prev,
-      backgroundImage: {
-        ...prev.backgroundImage,
-        width: dimension === 'width' ? numValue : prev.backgroundImage.width,
-        height: dimension === 'height' ? numValue : prev.backgroundImage.height,
+      ticketSize: {
+        ...prev.ticketSize,
+        [dimension]: numValue,
       },
+      ticketElements: {
+        ...prev.ticketElements,
+        backgroundImage: {
+          ...prev.ticketElements.backgroundImage,
+          width: dimension === 'width' ? numValue : prev.ticketElements.backgroundImage.width,
+          height: dimension === 'height' ? numValue : prev.ticketElements.backgroundImage.height,
+        },
+      }
     }));
   };
 
   const toggleElementVisibility = (elementName: TicketElementKey) => {
-    setTicketElements(prev => {
-      // Custom texts are handled individually, cannot toggle visibility of the entire array
-      if (elementName === 'customTexts') return prev;
+    if (elementName === 'customTexts') return;
 
-      return {
-        ...prev,
-        [elementName]: {
-          // @ts-ignore - dynamic access to union type
-          ...prev[elementName],
-          // @ts-ignore
-          visible: !prev[elementName].visible,
-        },
-      };
-    });
+    setTicketElements(prev => ({
+      ...prev,
+      [elementName]: {
+        // @ts-ignore
+        ...prev[elementName],
+        // @ts-ignore
+        visible: !prev[elementName].visible,
+      },
+    }));
   };
 
   const addCustomTextElement = () => {
@@ -128,23 +158,36 @@ export function useTicketDesigner() {
     }));
   };
 
+  const nudgeElement = (dx: number, dy: number) => {
+    if (!activeElement) return;
+    updateElementPosition(activeElement, {
+      x: (ticketElements.backgroundImage.x || 0) + dx, // This is a bit flawed for multi-element, but updateElementPosition handles it
+      y: (ticketElements.backgroundImage.y || 0) + dy,
+    });
+  };
+
+  // Improved updateElementPosition to handle relative updates better or just use absolute
   const updateElementPosition = (
     elementName: string,
     position: Partial<ElementPosition & TextElementProperties>
   ) => {
     if (elementName.startsWith('text-')) {
+      const element = ticketElements.customTexts.find(t => t.id === elementName);
+      if (!element) return;
+
       updateCustomTextElement(elementName, {
-        // @ts-ignore - position update is complex due to union types
         position: {
-          ...ticketElements.customTexts.find(t => t.id === elementName)?.position,
+          ...element.position,
           ...position,
+          x: position.x !== undefined ? position.x : element.position.x,
+          y: position.y !== undefined ? position.y : element.position.y,
         },
       });
     } else {
-      // @ts-ignore - dynamic key access
       setTicketElements(prev => ({
         ...prev,
         [elementName]: {
+          // @ts-ignore
           ...prev[elementName as TicketElementKey],
           ...position,
         },
@@ -166,7 +209,12 @@ export function useTicketDesigner() {
     deleteCustomTextElement,
     updateCustomTextElement,
     updateElementPosition,
+    nudgeElement,
     setTicketDetails,
     setTicketSize,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 }

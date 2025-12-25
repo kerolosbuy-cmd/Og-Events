@@ -24,6 +24,8 @@ const geistSans = Geist({
   subsets: ['latin'],
 });
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,6 +46,7 @@ export default function RootLayout({
               {children}
             </LanguageDirection>
           </LanguageProvider>
+          <Toaster position="bottom-right" richColors />
         </ThemeProvider>
       </body>
     </html>

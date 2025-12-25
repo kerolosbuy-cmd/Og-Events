@@ -119,7 +119,7 @@ export function useTicketRenderer({
     };
 
     // Draw background image (if available and visible)
-    if ((imagePreview || selectedImage) && ticketElements.backgroundImage.visible) {
+    if ((imagePreview || selectedImage || ticketElements.backgroundImage.url) && ticketElements.backgroundImage.visible) {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -132,7 +132,7 @@ export function useTicketRenderer({
         );
         drawContent();
       };
-      img.src = selectedImage || imagePreview || '';
+      img.src = selectedImage || imagePreview || ticketElements.backgroundImage.url || '';
     } else {
       drawContent();
     }

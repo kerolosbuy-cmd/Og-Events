@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, MoveUp, MoveDown, Trash2 } from 'lucide-react';
-import { TicketElements, TicketElementKey, CustomTextElement } from './types';
+import { Eye, EyeOff, GripVertical, Trash2, Type, QrCode, ImageIcon } from 'lucide-react';
+import { TicketElements, TicketElementKey } from './types';
 
 interface LayerListProps {
     ticketElements: TicketElements;
     activeElement: TicketElementKey | string | null;
-    onSelectElement: (id: string) => void;
+    onSelectElement: (id: TicketElementKey | string | null) => void;
     onToggleVisibility: (id: string) => void;
     onDeleteElement: (id: string) => void;
 }
@@ -17,74 +17,78 @@ export default function LayerList({
     onToggleVisibility,
     onDeleteElement,
 }: LayerListProps) {
-
     const layers = [
-        ...ticketElements.customTexts.map((text) => ({
-            id: text.id,
-            name: text.content || 'Text Element',
-            type: 'text',
-            visible: true,
-        })).reverse(),
-        {
-            id: 'qrCode',
-            name: 'QR Code',
-            type: 'system',
-            visible: ticketElements.qrCode.visible,
-        },
         {
             id: 'backgroundImage',
             name: 'Background Image',
-            type: 'system',
-            visible: ticketElements.backgroundImage.visible,
+            icon: <ImageIcon className="h-4 w-4" />,
+            visible: ticketElements.backgroundImage.visible
         },
+        {
+            id: 'qrCode',
+            name: 'QR Code',
+            icon: <QrCode className="h-4 w-4" />,
+            visible: ticketElements.qrCode.visible
+        },
+        ...ticketElements.customTexts.map(text => ({
+            id: text.id,
+            name: text.content || 'Untitled Text',
+            icon: <Type className="h-4 w-4" />,
+            visible: true,
+            isText: true
+        })).reverse(),
     ];
 
     return (
-        <div className="mt-6 border-t border-gray-100 pt-4">
-            <h4 className="font-medium text-gray-700 mb-3 text-sm">Layers</h4>
-            <div className="h-[200px] overflow-y-auto border border-gray-100 rounded-md">
-                <div className="space-y-1 p-2">
-                    {layers.map((layer) => (
-                        <div
-                            key={layer.id}
-                            className={`flex items-center justify-between p-2 rounded text-sm cursor-pointer ${activeElement === layer.id ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'hover:bg-gray-50'
-                                }`}
-                            onClick={() => onSelectElement(layer.id)}
-                        >
-                            <div className="flex items-center gap-2 truncate">
-                                <span className="truncate max-w-[120px]">{layer.name}</span>
+        <div className="flex flex-col bg-slate-900 overflow-hidden">
+            <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                {layers.map(layer => (
+                    <div
+                        key={layer.id}
+                        onClick={() => onSelectElement(layer.id)}
+                        className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-all duration-200 border-l-2 group ${activeElement === layer.id
+                                ? 'bg-indigo-500/10 border-indigo-500 text-slate-100'
+                                : 'border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                            }`}
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <GripVertical className="h-3 w-3 text-slate-600 flex-shrink-0" />
+                            <div className={`p-1.5 rounded-md ${activeElement === layer.id ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-500'}`}>
+                                {layer.icon}
                             </div>
-                            <div className="flex items-center gap-1">
-                                {layer.type !== 'text' && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onToggleVisibility(layer.id);
-                                        }}
-                                    >
-                                        {layer.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                                    </Button>
-                                )}
-                                {layer.type === 'text' && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDeleteElement(layer.id);
-                                        }}
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                )}
-                            </div>
+                            <span className="text-xs font-medium truncate max-w-[140px]">
+                                {layer.name}
+                            </span>
                         </div>
-                    ))}
-                </div>
+                        <div className="flex items-center gap-1 ml-2">
+                            {layer.id === 'backgroundImage' || layer.id === 'qrCode' ? (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={`h-7 w-7 transition-colors ${layer.visible ? 'text-slate-500 hover:text-white' : 'text-red-500/50 hover:text-red-500'}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onToggleVisibility(layer.id);
+                                    }}
+                                >
+                                    {layer.visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteElement(layer.id);
+                                    }}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
