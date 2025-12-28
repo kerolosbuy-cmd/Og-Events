@@ -19,8 +19,7 @@ export default function QRScannerUnifiedPage() {
         setLastResult,
         lastError,
         lastInfo,
-        handleContinue,
-        toggleCamera
+        handleContinue
     } = useScannerLogic(activeTab);
 
     if (!isTabInitialized) {
@@ -46,7 +45,6 @@ export default function QRScannerUnifiedPage() {
                         videoRef={videoRef}
                         hasCamera={hasCamera}
                         isCooldown={isCooldown}
-                        toggleCamera={toggleCamera}
                     />
                 )}
                 {activeTab === 'attendees' && <AttendeesView />}

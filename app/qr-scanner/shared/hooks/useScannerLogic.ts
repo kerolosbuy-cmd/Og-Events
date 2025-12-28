@@ -16,6 +16,11 @@ export const useScannerLogic = (activeTab: TabType) => {
     const cameraLockedRef = useRef(false);
     const isCooldownRef = useRef(false);
 
+    // Detect if device is mobile
+    const isMobile = () => {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+
     // Sync the ref whenever activeTab changes (WITHOUT restarting the camera)
     useEffect(() => {
         activeTabRef.current = activeTab;
@@ -24,7 +29,6 @@ export const useScannerLogic = (activeTab: TabType) => {
     // UI state
     const [cameraLocked, setCameraLocked] = useState(false);
     const [isCooldown, setIsCooldown] = useState(false);
-    const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
     const [hasCamera, setHasCamera] = useState(true);
 
     const [lastResult, setLastResult] = useState<ScanResult | null>(null);
@@ -148,7 +152,7 @@ export const useScannerLogic = (activeTab: TabType) => {
                 videoRef.current,
                 (result) => processScan(result.data),
                 {
-                    preferredCamera: facingMode,
+                    preferredCamera: isMobile() ? 'environment' : 'user',
                     highlightScanRegion: true,
                     highlightCodeOutline: true,
                 }
@@ -160,9 +164,9 @@ export const useScannerLogic = (activeTab: TabType) => {
             console.error('Scanner init failed:', err);
             setHasCamera(false);
         }
-    }, [facingMode, processScan]);
+    }, [processScan]);
 
-    // Only restart camera if initialized (first time) or if facingMode changes
+    // Only restart camera if initialized (first time)
     useEffect(() => {
         initScanner();
         return () => {
@@ -170,7 +174,7 @@ export const useScannerLogic = (activeTab: TabType) => {
             qrScannerRef.current?.destroy();
             qrScannerRef.current = null;
         };
-    }, [facingMode]); // activeTab removed from here = NO RESTART ON TAB SWITCH
+    }, []); // activeTab removed from here = NO RESTART ON TAB SWITCH
 
     const handleContinue = () => {
         setLastError(null);
@@ -182,13 +186,8 @@ export const useScannerLogic = (activeTab: TabType) => {
         // We don't need .resume() because we never called .pause()
     };
 
-    const toggleCamera = () => {
-        setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
-    };
-
     return {
         videoRef,
-        facingMode,
         hasCamera,
         cameraLocked,
         isCooldown,
@@ -196,7 +195,6 @@ export const useScannerLogic = (activeTab: TabType) => {
         setLastResult,
         lastError,
         lastInfo,
-        handleContinue,
-        toggleCamera
+        handleContinue
     };
 };

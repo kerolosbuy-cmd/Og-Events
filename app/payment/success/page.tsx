@@ -53,9 +53,9 @@ function PaymentSuccessContent() {
       verifyingPayment: 'Verifying Payment',
       pleaseWait: 'Please wait while we verify your payment...',
       paymentSuccessful: 'Payment Successful',
-      bookingConfirmed: 'Your payment has been processed successfully. Your booking is now confirmed.',
+      bookingConfirmed: 'Your tickets will be sent via WhatsApp within 48 hours.',
       orderId: 'Order ID',
-      myOrders: 'My Orders',
+      myOrders: 'Back to Home',
       paymentVerificationFailed: 'Payment Verification Failed',
       couldNotVerify: "We couldn't verify your payment.",
       returnToHome: 'Return to Home'
@@ -64,9 +64,9 @@ function PaymentSuccessContent() {
       verifyingPayment: 'جاري التحقق من الدفع',
       pleaseWait: 'يرجى الانتظار بينما نتحقق من دفعتك...',
       paymentSuccessful: 'تم الدفع بنجاح',
-      bookingConfirmed: 'تمت معالجة دفعتك بنجاح. تم تأكيد حجزك الآن.',
+      bookingConfirmed: 'سيتم إرسال التذاكر عبر واتساب خلال 48 ساعة.',
       orderId: 'رقم الطلب',
-      myOrders: 'طلباتي',
+      myOrders: 'العودة للرئيسية',
       paymentVerificationFailed: 'فشل التحقق من الدفع',
       couldNotVerify: 'لم نتمكن من التحقق من دفعتك.',
       returnToHome: 'العودة إلى الرئيسية'
@@ -191,7 +191,7 @@ function PaymentSuccessContent() {
   const handleContinue = () => {
     // Clear any pending booking
     localStorage.removeItem('pendingBooking');
-    router.push('/orders');
+    router.push('/');
   };
 
   return (
@@ -209,7 +209,7 @@ function PaymentSuccessContent() {
               <>
                 <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
                 <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>{t.paymentSuccessful}</h2>
-                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>{t.bookingConfirmed}</p>
+                <div className={`w-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-4 mb-6`}><p className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-lg`}>{t.bookingConfirmed}</p></div>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-6`}>{t.orderId}: {searchParams.get('orderId')}</p>
                 <button
                   onClick={handleContinue}

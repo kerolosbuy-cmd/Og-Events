@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, LogIn, LogOut, Info, AlertCircle } from 'lucide-react';
+import { LogIn, LogOut, Info, AlertCircle } from 'lucide-react';
 import { TabType } from '../types';
 
 interface ScannerViewProps {
@@ -7,10 +7,9 @@ interface ScannerViewProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     hasCamera: boolean;
     isCooldown: boolean;
-    toggleCamera: () => void;
 }
 
-export const ScannerView = ({ activeTab, videoRef, hasCamera, isCooldown, toggleCamera }: ScannerViewProps) => {
+export const ScannerView = ({ activeTab, videoRef, hasCamera, isCooldown }: ScannerViewProps) => {
     const isCheckIn = activeTab === 'checkin';
     const isInfo = activeTab === 'info';
     const Icon = isInfo ? Info : (isCheckIn ? LogIn : LogOut);
@@ -31,24 +30,19 @@ export const ScannerView = ({ activeTab, videoRef, hasCamera, isCooldown, toggle
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 h-48 w-48 bg-white/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-                <div className="flex items-center justify-between mb-3 relative z-10">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md border border-white/30 shadow-inner">
-                            <Icon className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black uppercase tracking-tight text-white leading-none whitespace-nowrap">
-                                {isInfo ? 'InfoScan' : (isCheckIn ? 'Check In' : 'Check Out')}
-                            </h1>
-                            <div className="flex items-center gap-1.5 mt-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Device Active</p>
-                            </div>
+                <div className="flex items-center gap-4 mb-3 relative z-10">
+                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md border border-white/30 shadow-inner">
+                        <Icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-white leading-none whitespace-nowrap">
+                            {isInfo ? 'InfoScan' : (isCheckIn ? 'Check In' : 'Check Out')}
+                        </h1>
+                        <div className="flex items-center gap-1.5 mt-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Device Active</p>
                         </div>
                     </div>
-                    <button onClick={toggleCamera} className="bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/20 active:scale-95 transition-all hover:bg-white/20">
-                        <RefreshCw className="h-5 w-5" />
-                    </button>
                 </div>
                 <div className="flex items-center gap-2 opacity-80 relative z-10">
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />

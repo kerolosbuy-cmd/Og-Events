@@ -10,7 +10,7 @@ interface BookingSeat {
     seat_number: string;
     category: string;
     status: string;
-    name_on_ticket?: string;
+    name_on_ticket: string | null;
     rows: {
         row_number: string;
         zones: {
