@@ -24,6 +24,9 @@ import {
 import LayerList from './LayerList';
 import { TicketElements, TicketDetails, TicketSize, TicketElementKey, CustomTextElement } from './types';
 import { useState } from 'react';
+import FontPicker from 'react-fontpicker-ts';
+import 'react-fontpicker-ts/dist/index.css';
+import './FontPickerCustom.css';
 
 interface TicketPropertiesPanelProps {
   activeElement: TicketElementKey | string | null;
@@ -285,17 +288,22 @@ export default function TicketPropertiesPanel({
                       <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
                         <div className="space-y-1.5">
                           <Label className="text-[10px] text-slate-500 uppercase">Font Family</Label>
-                          <Select
-                            value={textElement.position.fontFamily}
-                            onValueChange={val => onUpdateCustomText(textElement.id, { position: { ...textElement.position, fontFamily: val } })}
-                          >
-                            <SelectTrigger className="h-9 bg-slate-800/50 border-slate-700/50 text-xs text-slate-200">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-700 text-slate-200">
-                              {renderFontFamilyOptions()}
-                            </SelectContent>
-                          </Select>
+                          <div className="bg-slate-800/50 border border-slate-700/50 rounded-md">
+                            <FontPicker
+                              defaultValue={textElement.position.fontFamily}
+                              onChange={(val: any) => onUpdateCustomText(textElement.id, { position: { ...textElement.position, fontFamily: val } })}
+                              googleFonts="all"
+                              mode="combo"
+                              autoLoad
+                              style={{
+                                '--font-picker-bg': 'rgb(30, 41, 59)',
+                                '--font-picker-border': 'rgb(51, 65, 85)',
+                                '--font-picker-text': 'rgb(226, 232, 240)',
+                                '--font-picker-hover-bg': 'rgb(51, 65, 85)',
+                                '--font-picker-selected-bg': 'rgb(71, 85, 105)',
+                              } as React.CSSProperties}
+                            />
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">

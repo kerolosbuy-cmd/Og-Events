@@ -89,7 +89,7 @@ export const InfoOverlay = ({ info, onContinue }: { info: ScanResult; onContinue
                                     </p>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Last Check-in</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Arrived at</p>
                                     <p className="text-xs font-bold text-gray-900 dark:text-white">
                                         {seatData["last Check-in"] 
                                             ? new Date(seatData["last Check-in"]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })

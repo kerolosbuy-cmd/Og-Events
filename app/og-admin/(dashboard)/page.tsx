@@ -20,6 +20,8 @@ import { ChevronRight } from 'lucide-react';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 import { CalendarDays, Users, DollarSign, Ticket, AlertCircle, TrendingUp, Clock, CheckCircle } from 'lucide-react';
 
+import { DownloadTicketsButton } from '../components/DownloadTicketsButton';
+
 // Function to fetch dashboard statistics
 async function getDashboardStats() {
   try {
@@ -214,6 +216,9 @@ async function AdminDashboard() {
               <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
               Real-time monitoring of event bookings and operations
             </p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <DownloadTicketsButton />
           </div>
         </header>
 

@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
 
       return {
         html: htmlDocument,
-        filename: `${firstName} ${phone} ${zoneName}•${rowObj?.row_number || 'row'}•${seat.seat_number}.html`,
+        filename: `${firstName} ${zoneName}•${rowObj?.row_number || 'row'}•${seat.seat_number}.html`,
       };
     }));
 

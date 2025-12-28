@@ -739,14 +739,18 @@ export default function BookingsTable({
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="space-y-1">
-                                        <ol className="ml-6 space-y-1 list-decimal">
-                                            {booking.seats && sortSeats(booking.seats).map((seat, index) => (
+                                            <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                                                <span className="text-sm font-medium">Seats ({booking.seats?.length || 0})</span>
+                                            </div>
+                                            <ul className="space-y-1">
+                                                {booking.seats?.map((seat, index) => (
                                                 <li key={index} className="text-sm text-slate-600 dark:text-slate-300 font-mono">
                                                     {seat.rows.zones.name} • {String(seat.rows.row_number).padStart(2, '0')} • {String(seat.seat_number).padStart(2, '0')}{seat.name_on_ticket && <span className="font-bold"> ➤ {seat.name_on_ticket}</span>}
                                                 </li>
-                                            ))}
-                                        </ol>
+                                                ))}
+                                            </ul>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">

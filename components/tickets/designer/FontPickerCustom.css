@@ -1,0 +1,68 @@
+
+/* Custom dark theme styles for FontPicker */
+.fontpicker {
+  background: rgb(30, 41, 59) !important;
+  border-color: rgb(51, 65, 85) !important;
+}
+
+.fontpicker__search {
+  background-color: rgb(30, 41, 59) !important;
+  color: rgb(226, 232, 240) !important;
+}
+
+.fontpicker__popout {
+  background: rgb(30, 41, 59) !important;
+  border-color: rgb(51, 65, 85) !important;
+}
+
+.fontpicker__option.current {
+  background: rgb(51, 65, 85) !important;
+}
+
+.fontpicker__option.selected {
+  background: rgb(71, 85, 105) !important;
+}
+
+.fontpicker__nomatches {
+  background: rgb(30, 41, 59) !important;
+  color: rgb(226, 232, 240) !important;
+}
+
+.fontpicker__listbox {
+  background: rgb(30, 41, 59) !important;
+}
+
+/* Override light mode styles */
+@media (prefers-color-scheme: light) {
+  .fontpicker {
+    background: rgb(30, 41, 59) !important;
+    border-color: rgb(51, 65, 85) !important;
+  }
+
+  .fontpicker__search {
+    background-color: rgb(30, 41, 59) !important;
+    color: rgb(226, 232, 240) !important;
+  }
+
+  .fontpicker__popout {
+    background: rgb(30, 41, 59) !important;
+    border-color: rgb(51, 65, 85) !important;
+  }
+
+  .fontpicker__option.current {
+    background: rgb(51, 65, 85) !important;
+  }
+
+  .fontpicker__option.selected {
+    background: rgb(71, 85, 105) !important;
+  }
+
+  .fontpicker__nomatches {
+    background: rgb(30, 41, 59) !important;
+    color: rgb(226, 232, 240) !important;
+  }
+
+  .fontpicker__listbox {
+    background: rgb(30, 41, 59) !important;
+  }
+}
