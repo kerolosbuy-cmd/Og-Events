@@ -146,7 +146,6 @@ export const useScannerLogic = (activeTab: TabType) => {
 
     const initScanner = useCallback(async () => {
         if (!videoRef.current) return;
-        if (activeTabRef.current === 'attendees') return;
 
         try {
             const hasCam = await QrScanner.hasCamera();
@@ -177,7 +176,43 @@ export const useScannerLogic = (activeTab: TabType) => {
 
     // Only restart camera if initialized (first time)
     useEffect(() => {
-        initScanner();
+        const init = async () => {
+            // Wait for video element to be available
+            if (!videoRef.current) {
+                // Try again in a short while
+                setTimeout(init, 100);
+                return;
+            }
+
+            try {
+                const hasCam = await QrScanner.hasCamera();
+                setHasCamera(hasCam);
+                if (!hasCam) return;
+
+                if (qrScannerRef.current) {
+                    qrScannerRef.current.destroy();
+                }
+
+                const scanner = new QrScanner(
+                    videoRef.current,
+                    (result) => processScan(result.data),
+                    {
+                        preferredCamera: isMobile() ? 'environment' : 'user',
+                        highlightScanRegion: true,
+                        highlightCodeOutline: true,
+                    }
+                );
+
+                qrScannerRef.current = scanner;
+                await scanner.start();
+            } catch (err) {
+                console.error('Scanner init failed:', err);
+                setHasCamera(false);
+            }
+        };
+
+        init();
+
         return () => {
             qrScannerRef.current?.stop();
             qrScannerRef.current?.destroy();
