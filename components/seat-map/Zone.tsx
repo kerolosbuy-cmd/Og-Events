@@ -45,8 +45,11 @@ const Area: React.FC<{ area: AreaType }> = ({ area }) => {
       <rect
         width={area.width}
         height={area.height}
-        fill={area.fill_color}
-        stroke="black"
+        fill="transparent"
+        stroke={area.fill_color}
+        strokeWidth="4"          // makes the stroke wider
+        strokeDasharray="12,4"    // creates a dashed stroke: 8px dash, 4px gap
+        rx="13"
         className="area-rect"
       />
       <text

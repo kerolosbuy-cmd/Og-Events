@@ -37,7 +37,7 @@ async function getDashboardStats() {
     const { data: approvedData, error: approvedError } = await supabase
       .from('bookings')
       .select('id, amount')
-      .eq('status', 'approved');
+      .like('status', 'approved%');
 
     const { data: rejectedData, error: rejectedError } = await supabase
       .from('bookings')
@@ -73,7 +73,7 @@ async function getDashboardStats() {
     const { data: revenueData, error: revenueError } = await supabase
       .from('bookings')
       .select('amount, created_at')
-      .eq('status', 'approved');
+      .like('status', 'approved%');
 
     // Calculate statistics
     const pendingCount = pendingData?.length || 0;

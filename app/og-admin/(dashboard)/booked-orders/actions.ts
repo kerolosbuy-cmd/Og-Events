@@ -64,7 +64,7 @@ export async function getBookedOrders(): Promise<{
         )
       `
       )
-      .eq('status', 'approved')
+      .like('status', 'approved%')
       .order('created_at', { ascending: false });
 
     if (error) {
