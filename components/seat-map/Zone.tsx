@@ -28,6 +28,8 @@ interface ZoneProps {
   isMobile?: boolean;
   /** Flag to indicate if full map view is active */
   isFullMapView?: boolean;
+  /** Flag to indicate if dark mode is active */
+  isDarkMode?: boolean;
 }
 
 /**
@@ -57,7 +59,12 @@ const Area: React.FC<{ area: AreaType }> = ({ area }) => {
         y={textY}
         textAnchor="middle"
         dominantBaseline="middle"
-        fill="black"
+        fill={area.fill_color}
+          style={{
+    filter: "saturate(2) brightness(0.85)", // increases color saturation 2x
+        fontSize: "23px",            // increase font size
+    fontWeight: "700",           // bold
+  }}
         className="area-text"
       >
         {area.text_content}
