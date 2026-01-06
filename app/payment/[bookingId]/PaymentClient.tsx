@@ -27,6 +27,7 @@ export default function PaymentClient({ bookingId, shouldRedirect = false }: Pay
 
     // State for seat names - must be declared before usePaymentSubmission
     const [seatNames, setSeatNames] = useState<Record<string, string>>({});
+    const [selectedPaymentMethodName, setSelectedPaymentMethodName] = useState<string | null>(null);
 
     const {
         file,
@@ -37,7 +38,7 @@ export default function PaymentClient({ bookingId, shouldRedirect = false }: Pay
         handleFileChange,
         handleSubmit,
         updateSeatNamesInDB
-    } = usePaymentSubmission(bookingId, seatNames);
+    } = usePaymentSubmission(bookingId, seatNames, selectedPaymentMethodName);
 
     // Handle redirection if needed
     useEffect(() => {
@@ -153,6 +154,7 @@ export default function PaymentClient({ bookingId, shouldRedirect = false }: Pay
             onSeatNameChange={handleSeatNameChange}
             allNamesFilled={allNamesFilled}
             onUpdateSeatNames={updateSeatNamesInDB}
+            onPaymentMethodSelect={setSelectedPaymentMethodName}
         />
     );
 }

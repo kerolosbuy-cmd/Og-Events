@@ -110,10 +110,15 @@ export const unsubscribeFromSeatUpdates = (subscription: any) => {
   supabase.removeChannel(subscription);
 };
 
-export const updateBookingWithPayment = async (bookingId: string, imageUrl: string | null) => {
+export const updateBookingWithPayment = async (
+  bookingId: string,
+  imageUrl: string | null,
+  paymentMethod?: string | null
+) => {
   const { data, error } = await supabase.rpc('update_booking_with_payment', {
     p_booking_id: bookingId,
     p_image: imageUrl,
+    p_paymentmethod: paymentMethod,
   });
 
   return { data, error };

@@ -35,6 +35,7 @@ interface PaymentPageProps {
   onSeatNameChange: (seatId: string, name: string) => void;
   allNamesFilled: boolean;
   onUpdateSeatNames: () => Promise<boolean>;
+  onPaymentMethodSelect: (methodName: string | null) => void;
 }
 
 export default function PaymentPage({
@@ -50,7 +51,8 @@ export default function PaymentPage({
   seatNames,
   onSeatNameChange,
   allNamesFilled,
-  onUpdateSeatNames
+  onUpdateSeatNames,
+  onPaymentMethodSelect
 }: PaymentPageProps) {
   const { isDarkMode } = useDarkMode();
   const { t, isRTL } = useLanguageContext();
@@ -59,6 +61,8 @@ export default function PaymentPage({
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
     setSelectedPaymentMethod(method);
+    // Pass the payment method title (name) to the parent
+    onPaymentMethodSelect(method.title);
   };
 
   return (

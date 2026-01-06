@@ -9,7 +9,11 @@ import { markPaymentUploaded } from '@/lib/booking-redirect';
 import { convertHeicToJpeg } from '@/lib/heic-converter';
 import { supabase } from '@/lib/supabase';
 
-export const usePaymentSubmission = (bookingId: string, seatNames?: Record<string, string>) => {
+export const usePaymentSubmission = (
+  bookingId: string,
+  seatNames?: Record<string, string>,
+  paymentMethod?: string | null
+) => {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -91,8 +95,8 @@ export const usePaymentSubmission = (bookingId: string, seatNames?: Record<strin
         paymentProofUrl = url;
       }
 
-      // Update the booking with the payment proof URL
-      const { data, error } = await updateBookingWithPayment(bookingId, paymentProofUrl);
+      // Update the booking with the payment proof URL and payment method
+      const { data, error } = await updateBookingWithPayment(bookingId, paymentProofUrl, paymentMethod);
 
       if (error) {
         setError('Failed to upload payment proof');

@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getPendingBookingsWithImages, BookingData } from './actions';
-import BookingsTable from '@/components/bookings/BookingsTable';
+import PendingBookingsTable from './PendingBookingsTable';
 import { ArrowLeft, Clock, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { isAuthorizedAdmin } from '@/lib/admin';
 
@@ -107,20 +107,7 @@ async function BookingsContent() {
             </CardContent>
           </Card>
         ) : (
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Pending Bookings</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Review and manage bookings with pending or null status</p>
-            </div>
-            <BookingsTable
-              bookings={bookings || []}
-              processingId={null}
-              showStatusColumn={false}
-              showPaymentProofColumn={true}
-              showCustomerActions={true}
-              showDownloadActions={false}
-            />
-          </div>
+          <PendingBookingsTable initialBookings={bookings || []} />
         )}
       </div>
     </div>

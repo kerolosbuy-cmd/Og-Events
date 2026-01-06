@@ -153,7 +153,7 @@ function PaymentSuccessContent() {
           const merchantOrderId = searchParams.get('merchantOrderId');
           if (merchantOrderId) {
             // Update the booking with payment proof
-            const { data, error } = await updateBookingWithPayment(merchantOrderId, 'online');
+            const { data, error } = await updateBookingWithPayment(merchantOrderId, null, 'online');
 
             if (error) {
               console.error('Failed to update booking with payment:', error);

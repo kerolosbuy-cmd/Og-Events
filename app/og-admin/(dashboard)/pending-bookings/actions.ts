@@ -8,6 +8,7 @@ export interface BookingData {
   phone: string;
   amount: number;
   image: string | null;
+  manual_pay: string | null;
   status: BookingStatus;
   created_at: string;
   seats: Array<{
@@ -44,6 +45,7 @@ export async function getPendingBookingsWithImages(): Promise<{
         email,
         phone,
         amount,
+        manual_pay,
         image,
         status,
         created_at,
@@ -62,7 +64,7 @@ export async function getPendingBookingsWithImages(): Promise<{
         )
       `
       )
-      .in('status', ['pending', null])
+      .in('status', ['pending', 'pending_approval', null])
       .not('image', 'is', null)
       .order('created_at', { ascending: true });
 

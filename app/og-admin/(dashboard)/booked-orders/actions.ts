@@ -10,6 +10,7 @@ export interface BookingData {
   phone: string;
   amount: number;
   image: string | null;
+  manual_pay: string | null;
   status: BookingStatus;
   created_at: string;
   seats: Array<{
@@ -46,6 +47,7 @@ export async function getBookedOrders(): Promise<{
         email,
         phone,
         amount,
+        manual_pay,
         image,
         status,
         created_at,

@@ -6,7 +6,7 @@
     ]
   },
   "payment": {
-    "mode": "online",
+    "mode": "manual",
     "timeLimit": 7,
     "timeLimitUnit": "seconds",
     "description": "Payment time limit in min (default: 10 minutes)",
@@ -26,13 +26,6 @@
           "phoneNumber": "01203163377",
           "name": "Bero K**** H******",
           "color": "#b826d9"
-        },
-        {
-          "image": "https://static.vecteezy.com/system/resources/thumbnails/016/134/397/small/e-wallet-logo-design-design-template-vector.jpg",
-          "title": "Wallet",
-          "phoneNumber": "0123630702",
-          "name": "kerolos t***** r***",
-          "color": "#4d26d9"
         }
       ],
       "description": "Payment methods displayed to users during checkout"

@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Hash, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, AlertCircle, Loader2, FileText, Download, Eye } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Hash, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, AlertCircle, Loader2, FileText, Download, Eye, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import settings from '@/config/settings.json';
 
 interface BookingSeat {
     id: string;
@@ -26,6 +28,7 @@ export interface BookingData {
     phone: string;
     amount: number;
     image: string | null;
+    manual_pay: string | null;
     status: string;
     created_at: string;
     seats: BookingSeat[];
@@ -113,20 +116,47 @@ export default function BookingsTable({
         });
     };
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [showAdvancedFilters, setShowAdvancedFilters] = useState(showAdvancedFiltersByDefault);
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [minSeats, setMinSeats] = useState('');
-    const [maxSeats, setMaxSeats] = useState('');
-    const [minAmount, setMinAmount] = useState('');
-    const [maxAmount, setMaxAmount] = useState('');
-    const [phonePrefix, setPhonePrefix] = useState('');
-    const [phoneContains, setPhoneContains] = useState('');
-    const [seatOperator, setSeatOperator] = useState<'gte' | 'lte' | 'eq'>('gte');
-    const [amountOperator, setAmountOperator] = useState<'gte' | 'lte' | 'eq'>('gte');
-    const [presetFilter, setPresetFilter] = useState<string>('');
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
+    const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(showAdvancedFiltersByDefault || !!searchParams.get('advanced'));
+    const [dateFrom, setDateFrom] = useState(searchParams.get('from') || '');
+    const [dateTo, setDateTo] = useState(searchParams.get('to') || '');
+    const [minSeats, setMinSeats] = useState(searchParams.get('minSeats') || '');
+    const [maxSeats, setMaxSeats] = useState(searchParams.get('maxSeats') || '');
+    const [minAmount, setMinAmount] = useState(searchParams.get('minAmount') || '');
+    const [maxAmount, setMaxAmount] = useState(searchParams.get('maxAmount') || '');
+    const [phonePrefix, setPhonePrefix] = useState(searchParams.get('phonePrefix') || '');
+    const [phoneContains, setPhoneContains] = useState(searchParams.get('phoneContains') || '');
+    const [seatOperator, setSeatOperator] = useState<'gte' | 'lte' | 'eq'>((searchParams.get('seatOp') as any) || 'gte');
+    const [amountOperator, setAmountOperator] = useState<'gte' | 'lte' | 'eq'>((searchParams.get('amountOp') as any) || 'gte');
+    const [presetFilter, setPresetFilter] = useState<string>(searchParams.get('preset') || '');
+    const [manualPayFilter, setManualPayFilter] = useState(searchParams.get('paymentMethod') || '');
+
+    // Sync filters to URL
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (searchTerm) params.set('q', searchTerm);
+        if (statusFilter !== 'all') params.set('status', statusFilter);
+        if (showAdvancedFilters) params.set('advanced', 'true');
+        if (dateFrom) params.set('from', dateFrom);
+        if (dateTo) params.set('to', dateTo);
+        if (minSeats) params.set('minSeats', minSeats);
+        if (maxSeats) params.set('maxSeats', maxSeats);
+        if (minAmount) params.set('minAmount', minAmount);
+        if (maxAmount) params.set('maxAmount', maxAmount);
+        if (phonePrefix) params.set('phonePrefix', phonePrefix);
+        if (phoneContains) params.set('phoneContains', phoneContains);
+        if (seatOperator !== 'gte') params.set('seatOp', seatOperator);
+        if (amountOperator !== 'gte') params.set('amountOp', amountOperator);
+        if (presetFilter) params.set('preset', presetFilter);
+        if (manualPayFilter) params.set('paymentMethod', manualPayFilter);
+
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }, [searchTerm, statusFilter, showAdvancedFilters, dateFrom, dateTo, minSeats, maxSeats, minAmount, maxAmount, phonePrefix, phoneContains, seatOperator, amountOperator, presetFilter, manualPayFilter, pathname, router]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -142,6 +172,13 @@ export default function BookingsTable({
                     <Badge variant="secondary" className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 dark:from-yellow-900/30 dark:to-amber-900/30 dark:text-yellow-300 shadow-sm">
                         <Clock className="h-3 w-3 mr-1" />
                         {t('pending')}
+                    </Badge>
+                );
+            case 'pending_approval':
+                return (
+                    <Badge variant="secondary" className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 dark:from-orange-900/30 dark:to-amber-900/30 dark:text-orange-300 shadow-sm">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Pending Approval
                     </Badge>
                 );
             case 'rejected':
@@ -174,6 +211,7 @@ export default function BookingsTable({
                 booking.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 booking.phone.includes(searchTerm) ||
                 booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (booking.manual_pay && booking.manual_pay.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 booking.seats.some(seat =>
                     seat.name_on_ticket?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     seat.seat_number.includes(searchTerm) ||
@@ -181,6 +219,7 @@ export default function BookingsTable({
                 );
 
             const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+            const matchesManualPay = !manualPayFilter || (booking.manual_pay && booking.manual_pay.toLowerCase().includes(manualPayFilter.toLowerCase()));
 
             // Advanced filters
             let matchesDateRange = true;
@@ -216,6 +255,7 @@ export default function BookingsTable({
             const matchesPhonePrefix = !phonePrefix || booking.phone.startsWith(phonePrefix);
             const matchesPhoneContains = !phoneContains || booking.phone.includes(phoneContains);
 
+
             // Preset filters
             let matchesPreset = true;
             if (presetFilter === 'highValue') {
@@ -230,9 +270,9 @@ export default function BookingsTable({
                 matchesPreset = booking.status === 'pending' && (booking.seats?.length || 0) >= 5;
             }
 
-            return matchesSearch && matchesStatus && matchesDateRange && matchesSeats && matchesAmount && matchesPhonePrefix && matchesPhoneContains && matchesPreset;
+            return matchesSearch && matchesStatus && matchesManualPay && matchesDateRange && matchesSeats && matchesAmount && matchesPhonePrefix && matchesPhoneContains && matchesPreset;
         });
-    }, [bookings, searchTerm, statusFilter, dateFrom, dateTo, minSeats, maxSeats, minAmount, maxAmount, phonePrefix, phoneContains, seatOperator, amountOperator, presetFilter]);
+    }, [bookings, searchTerm, statusFilter, manualPayFilter, dateFrom, dateTo, minSeats, maxSeats, minAmount, maxAmount, phonePrefix, phoneContains, seatOperator, amountOperator, presetFilter]);
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
@@ -258,8 +298,24 @@ export default function BookingsTable({
                                 <option value="all">{t('allStatuses') || 'All Statuses'}</option>
                                 <option value="approved">{t('approved')}</option>
                                 <option value="pending">{t('pending')}</option>
+                                <option value="pending_approval">Pending Approval</option>
                                 <option value="rejected">{t('rejected')}</option>
                                 <option value="timeout">{t('timeout')}</option>
+                            </select>
+                        </div>
+                        <div className="sm:w-48">
+                            <select
+                                value={manualPayFilter}
+                                onChange={(e) => setManualPayFilter(e.target.value)}
+                                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            >
+                                <option value="">All Payment Methods</option>
+                                <option value="online">Online Payment</option>
+                                {settings.payment.instructions.paymentMethods.map((method, index) => (
+                                    <option key={index} value={method.title}>
+                                        {method.title}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <button
@@ -450,6 +506,7 @@ export default function BookingsTable({
                                         className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                     />
                                 </div>
+
                             </div>
 
                             {/* Clear All Filters Button */}
@@ -464,6 +521,7 @@ export default function BookingsTable({
                                         setMaxAmount('');
                                         setPhonePrefix('');
                                         setPhoneContains('');
+                                        setManualPayFilter('');
                                         setPresetFilter('');
                                         setSeatOperator('gte');
                                         setAmountOperator('gte');
@@ -482,7 +540,8 @@ export default function BookingsTable({
                         </div>
                     )}
                 </div>
-            )}
+            )
+            }
             {/* Mobile Card View */}
             <div className="md:hidden">
                 {filteredBookings.map(booking => (
@@ -507,13 +566,15 @@ export default function BookingsTable({
                                     {formatTime(booking.created_at)}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div>
                                 {getStatusBadge(booking.status)}
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-xl font-bold text-green-600 dark:text-green-400">{booking.amount}</span>
-                                    <span className="text-xs text-green-600 dark:text-green-400">{currency}</span>
-                                </div>
                             </div>
+                        </div>
+
+                        {/* Amount - On its own line */}
+                        <div className="flex items-baseline gap-1 mb-3">
+                            <span className="text-2xl font-bold text-green-600 dark:text-green-400">{booking.amount}</span>
+                            <span className="text-sm text-green-600 dark:text-green-400">{currency}</span>
                         </div>
 
                         {/* Customer Info */}
@@ -536,6 +597,14 @@ export default function BookingsTable({
                                 </div>
                                 <span>{booking.phone}</span>
                             </div>
+                            {booking.manual_pay && (
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full">
+                                        <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                                    </div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">{booking.manual_pay}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Seats */}
@@ -578,7 +647,7 @@ export default function BookingsTable({
                         {/* Actions */}
                         {showActions && (
                             <div className="flex gap-2">
-                                {showCustomerActions && booking.status === 'pending' && (
+                                {showCustomerActions && (booking.status === 'pending' || booking.status === 'pending_approval') && (
                                     <>
                                         {onApprove && (
                                             <Button
@@ -736,21 +805,29 @@ export default function BookingsTable({
                                             </div>
                                             <span>{booking.phone}</span>
                                         </div>
+                                        {booking.manual_pay && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full">
+                                                    <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                                                </div>
+                                                <span className="font-medium text-slate-700 dark:text-slate-300">{booking.manual_pay}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <MapPin className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                                                <span className="text-sm font-medium">Seats ({booking.seats?.length || 0})</span>
-                                            </div>
-                                            <ul className="space-y-1">
-                                                {booking.seats?.map((seat, index) => (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                                            <span className="text-sm font-medium">Seats ({booking.seats?.length || 0})</span>
+                                        </div>
+                                        <ul className="space-y-1">
+                                            {booking.seats?.map((seat, index) => (
                                                 <li key={index} className="text-sm text-slate-600 dark:text-slate-300 font-mono">
                                                     {seat.rows.zones.name} • {String(seat.rows.row_number).padStart(2, '0')} • {String(seat.seat_number).padStart(2, '0')}{seat.name_on_ticket && <span className="font-bold"> ➤ {seat.name_on_ticket}</span>}
                                                 </li>
-                                                ))}
-                                            </ul>
+                                            ))}
+                                        </ul>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -787,7 +864,7 @@ export default function BookingsTable({
                                 {showActions && (
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex gap-2 justify-end">
-                                            {showCustomerActions && booking.status === 'pending' && (
+                                            {showCustomerActions && (booking.status === 'pending' || booking.status === 'pending_approval') && (
                                                 <>
                                                     {onApprove && (
                                                         <Button
@@ -863,6 +940,6 @@ export default function BookingsTable({
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div >
     );
 }
