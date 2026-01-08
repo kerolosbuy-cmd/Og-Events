@@ -61,6 +61,31 @@ export async function POST(request: NextRequest) {
     }
 
     const categories = venuesData[0].categories || [];
+    
+    // Collect all unique font families used in the tickets
+    const uniqueFontFamilies = new Set<string>();
+
+    // First pass to collect all font families
+    booking.seats.forEach(seat => {
+      const seatCategory = seat.category;
+      const category = categories.find((cat: any) => cat.name === seatCategory);
+
+      let template = {
+        ticketElements: {
+          customTexts: [],
+        },
+      };
+
+      if (category && category.templates && category.templates.length > 0) {
+        template = category.templates[0];
+      }
+
+      template.ticketElements.customTexts.forEach((text: any) => {
+        if (text.position.fontFamily) {
+          uniqueFontFamilies.add(text.position.fontFamily);
+        }
+      });
+    });
 
     // Generate HTML for tickets
     const ticketsHtml = booking.seats
@@ -102,6 +127,20 @@ export async function POST(request: NextRequest) {
         // Generate custom texts
         const customTextsHtml = template.ticketElements.customTexts
           .map((text: any) => {
+                        // Process font-family from database - check if it's a Google Font
+            let fontFamily = text.position.fontFamily || 'Inter, sans-serif';
+
+            // If the font family doesn't already include a fallback, add one
+            if (!fontFamily.includes(',')) {
+                // Check if it's a common Google Font that needs proper formatting
+                const googleFonts = ['Inter', 'Roboto', 'Playfair Display', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Raleway'];
+                if (googleFonts.includes(fontFamily)) {
+                    fontFamily = `'${fontFamily}', sans-serif`;
+                } else {
+                    fontFamily = `${fontFamily}, sans-serif`;
+                }
+            }
+
             const style = `
                     position: absolute;
                     left: ${text.position.x}px;
@@ -110,7 +149,7 @@ export async function POST(request: NextRequest) {
                     height: ${text.position.height}px;
                     font-size: ${text.position.fontSize}px;
                     color: ${text.position.fontColor};
-                    font-family: ${text.position.fontFamily};
+                    font-family: ${fontFamily};
                     font-style: ${text.position.fontStyle || 'normal'};
                     font-weight: ${text.position.fontWeight || 'normal'};
                     text-align: ${text.position.textAlign || 'left'};
@@ -174,6 +213,11 @@ export async function POST(request: NextRequest) {
             `;
       })
       .join('');
+    // Generate Google Fonts import URL with all unique fonts
+    const googleFontsUrl = Array.from(uniqueFontFamilies).map(font => {
+      // Replace spaces with + for URL encoding
+      return `family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700`;
+    }).join('&');
 
     // Create a complete HTML document
     const htmlDocument = `
@@ -184,7 +228,7 @@ export async function POST(request: NextRequest) {
                 <title>Event Tickets</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?${googleFontsUrl}&display=swap" rel="stylesheet">
                 <style>
                     @page {
                         size: A4;
@@ -219,4 +263,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
