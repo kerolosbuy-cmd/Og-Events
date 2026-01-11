@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-const VENUE_ID = "6667da4b-66e0-4d85-ba78-d65ed67dc85c";
+const VENUE_ID = "504317e9-1d2b-4928-a7ac-2589e12544cb";
 
 export async function getVenueData() {
     const supabase = await createClient();
@@ -89,3 +89,4 @@ export async function deleteTicketTemplate(categoryName: string, templateName: s
     revalidatePath('/admin/tickets');
     return { success: true };
 }
+
