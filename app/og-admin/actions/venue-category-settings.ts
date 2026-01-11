@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 // Get the venue ID - you may need to adjust this based on your app logic
-const VENUE_ID = "6667da4b-66e0-4d85-ba78-d65ed67dc85c";
+const VENUE_ID = "504317e9-1d2b-4928-a7ac-2589e12544cb";
 
 export async function getCategorySettings() {
   const supabase = await createClient();
@@ -61,3 +61,4 @@ export async function saveCategorySettings(settings: Record<string, boolean>) {
 
   return { success: true };
 }
+
